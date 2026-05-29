@@ -1,0 +1,18 @@
+docs/superpowers/specs/
+
+node_modules/
+dist/
+.turbo/
+*.log
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Build artifacts
+coverage/
+.tsbuildinfo
+
+# Bun
+.bun/
