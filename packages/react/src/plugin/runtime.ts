@@ -1,4 +1,5 @@
-import type { GateResult, Plugin, PluginContext, PluginPhase } from '../types'
+import type { SyntheticEvent } from 'react'
+import type { DOMEventName, GateResult, Plugin, PluginContext, PluginPhase } from '../types'
 
 export type OnError = (err: unknown, pluginName: string, phase: PluginPhase) => void
 
@@ -56,4 +57,49 @@ export function runMount(
       }
     }
   }
+}
+
+type HandlerMap = Partial<Record<DOMEventName, (e: SyntheticEvent) => void>>
+
+export function buildHandlers(
+  plugins: ReadonlyArray<Plugin<any, string, string>>,
+  configs: Record<string, unknown>,
+  ctx: PluginContext,
+  onError?: OnError,
+): HandlerMap {
+  const byEvent = new Map<
+    DOMEventName,
+    Array<{
+      name: string
+      fn: (e: SyntheticEvent, cfg: unknown, ctx: PluginContext) => void
+      cfg: unknown
+    }>
+  >()
+
+  for (const plugin of plugins) {
+    if (!plugin.events) continue
+    if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+    const cfg = configs[plugin.propKey]
+    for (const eventName of Object.keys(plugin.events) as DOMEventName[]) {
+      const handler = plugin.events[eventName]
+      if (!handler) continue
+      const arr = byEvent.get(eventName) ?? []
+      arr.push({ name: plugin.name, fn: handler as never, cfg })
+      byEvent.set(eventName, arr)
+    }
+  }
+
+  const out: HandlerMap = {}
+  for (const [eventName, list] of byEvent) {
+    out[eventName] = (e: SyntheticEvent) => {
+      for (const { name, fn, cfg } of list) {
+        try {
+          fn(e, cfg, ctx)
+        } catch (err) {
+          onError?.(err, name, 'event')
+        }
+      }
+    }
+  }
+  return out
 }
