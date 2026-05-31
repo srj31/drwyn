@@ -17,6 +17,7 @@ import {
 } from 'react'
 import { composeRefs } from './plugin/compose-ref'
 import { devWarn } from './plugin/dev-warn'
+import { observe, unobserve, type VisibilityThreshold } from './plugin/intersection'
 import { buildHandlers, runGate, runMount } from './plugin/runtime'
 import { useActionRuntime } from './provider'
 import type { ActionPluginRegistry, DOMEventName, Plugin } from './types'
@@ -126,6 +127,61 @@ export function Action(props: ActionProps): ReactNode {
   useEffect(() => {
     if (gateResult.kind === 'block') return
     return runMount(runtime.plugins, configs, ctx, runtime.onError)
+  }, [runtime.plugins, configs, ctx, gateResult.kind, runtime.onError])
+
+  useEffect(() => {
+    if (gateResult.kind === 'block') return
+    const el = elementRef.current
+    if (!el) return
+
+    type Registration = {
+      threshold: VisibilityThreshold
+      onVisible: ((cfg: unknown, ctx: unknown) => void) | undefined
+      onHidden: ((cfg: unknown, ctx: unknown) => void) | undefined
+      cfg: unknown
+      name: string
+    }
+
+    const regs: Registration[] = []
+    for (const plugin of runtime.plugins) {
+      if (!plugin.visibility) continue
+      if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+      regs.push({
+        threshold: (plugin.visibility.threshold ?? 0.5) as VisibilityThreshold,
+        onVisible: plugin.visibility.onVisible as Registration['onVisible'],
+        onHidden: plugin.visibility.onHidden as Registration['onHidden'],
+        cfg: configs[plugin.propKey],
+        name: plugin.name,
+      })
+    }
+
+    if (regs.length === 0) return
+
+    const byThreshold = new Map<VisibilityThreshold, Registration[]>()
+    for (const reg of regs) {
+      const list = byThreshold.get(reg.threshold) ?? []
+      list.push(reg)
+      byThreshold.set(reg.threshold, list)
+    }
+
+    for (const threshold of byThreshold.keys()) {
+      observe(el, threshold, (visible: boolean) => {
+        for (const reg of byThreshold.get(threshold)!) {
+          try {
+            if (visible) reg.onVisible?.(reg.cfg, ctx)
+            else reg.onHidden?.(reg.cfg, ctx)
+          } catch (err) {
+            runtime.onError(err, reg.name, 'visibility')
+          }
+        }
+      })
+    }
+
+    return () => {
+      for (const threshold of byThreshold.keys()) {
+        unobserve(el, threshold)
+      }
+    }
   }, [runtime.plugins, configs, ctx, gateResult.kind, runtime.onError])
 
   if (gateResult.kind === 'block') return null
