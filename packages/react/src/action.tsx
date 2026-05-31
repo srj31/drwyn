@@ -49,6 +49,21 @@ function extractConfigs(props: Record<string, unknown>): Record<string, unknown>
   return out
 }
 
+function warnOnUnknownProps(
+  configs: Record<string, unknown>,
+  knownPropKeys: ReadonlySet<string>,
+): void {
+  if (process.env.NODE_ENV === 'production') return
+  for (const key of Object.keys(configs)) {
+    if (!knownPropKeys.has(key)) {
+      devWarn(
+        `unknown <Action> prop "${key}" — no registered plugin claims this propKey. ` +
+          `Did you forget to add the plugin to <ActionProvider plugins={[...]}>?`,
+      )
+    }
+  }
+}
+
 const EVENT_NAME_TO_DOM_PROP: Record<DOMEventName, string> = {
   click: 'onClick',
   focus: 'onFocus',
@@ -106,6 +121,13 @@ export function Action(props: ActionProps): ReactNode {
     () => ({ instanceId, services: runtime.services }),
     [instanceId, runtime.services],
   )
+
+  const knownPropKeys = useMemo(
+    () => new Set(runtime.plugins.map((p) => p.propKey)),
+    [runtime.plugins],
+  )
+
+  warnOnUnknownProps(configs, knownPropKeys)
 
   const gateResult = runGate(runtime.plugins, configs, ctx, runtime.onError)
 
