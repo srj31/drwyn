@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Preview only — skip git push and npm publish'
+        type: boolean
+        default: false
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -39,7 +44,20 @@ jobs:
       - name: Apply pending changesets
         run: bun run version-packages
 
+      - name: Show version bump preview (dry run)
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          if git diff --quiet; then
+            echo "::notice::No version changes — nothing would be released."
+          else
+            echo "::notice::DRY RUN — these are the changes that would be committed:"
+            git status --short
+            echo ""
+            git diff --stat
+          fi
+
       - name: Commit and push version bump (if any)
+        if: github.event.inputs.dry_run != 'true'
         run: |
           if git diff --quiet; then
             echo "No version changes — nothing to release."
@@ -49,8 +67,16 @@ jobs:
           git commit -m "chore: release [skip ci]"
           git push origin HEAD:main
 
-      - name: Build and publish to npm
-        run: bun run release
+      - name: Build library
+        run: bun run build
+
+      - name: Publish to npm
+        if: github.event.inputs.dry_run != 'true'
+        run: bunx changeset publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish skipped (dry run)
+        if: github.event.inputs.dry_run == 'true'
+        run: echo "::notice::DRY RUN — skipped 'bunx changeset publish'."
