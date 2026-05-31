@@ -17,7 +17,7 @@ export type GateResult =
   | { kind: 'replace'; node: ReactNode }
 
 export interface ActionServicesRegistry {
-  sink: (event: { name: string; props?: Record<string, unknown> }) => void
+  sink: (event: { name: string; props?: Record<string, unknown> | undefined }) => void
   flagSource: {
     isOn: (key: string) => boolean | undefined
   }
