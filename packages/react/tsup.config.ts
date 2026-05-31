@@ -13,4 +13,5 @@ export default defineConfig({
   splitting: false,
   target: 'es2022',
   external: ['react', 'react-dom'],
+  banner: { js: "'use client';" },
 })
