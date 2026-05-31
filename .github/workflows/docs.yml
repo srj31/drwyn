@@ -11,12 +11,14 @@ on:
     branches: [main]
     paths:
       - 'apps/docs/**'
-      - 'docs/**'
 
 jobs:
   build:
     name: Build docs site
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/docs
     steps:
       - uses: actions/checkout@v4
 
@@ -24,8 +26,8 @@ jobs:
         with:
           bun-version: latest
 
-      - run: bun install --frozen-lockfile
+      - name: Install docs deps
+        run: bun install --frozen-lockfile
 
       - name: Build docs
-        working-directory: apps/docs
         run: bun run build
