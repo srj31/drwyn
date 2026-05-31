@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { Action } from '../src/action'
 import { definePlugin } from '../src/plugin/define'
@@ -8,7 +8,19 @@ declare module '../src/types' {
   interface ActionPluginRegistry {
     testGate: ReturnType<typeof testGatePlugin>
     testMount: ReturnType<typeof testMountPlugin>
+    testClick: ReturnType<typeof testClickPlugin>
   }
+}
+
+function testClickPlugin(onClick: (label: string) => void) {
+  return definePlugin({
+    name: 'testClick',
+    propKey: 'testClick',
+    config: {} as { label: string },
+    events: {
+      click: (_e, cfg) => onClick(cfg.label),
+    },
+  })
 }
 
 function testGatePlugin(decision: 'pass' | 'block' | { kind: 'replace'; node: any }) {
@@ -104,5 +116,25 @@ describe('<Action mode="region">', () => {
 
     unmount()
     expect(onUnmount).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('<Action mode="region"> event delegation', () => {
+  it('fires plugin click handlers when any descendant is clicked', () => {
+    const onClick = vi.fn()
+    const p = testClickPlugin(onClick)
+
+    render(
+      <ActionProvider plugins={[p]}>
+        <Action testClick={{ label: 'card' }}>
+          <button data-testid="btn" type="button">
+            click
+          </button>
+        </Action>
+      </ActionProvider>,
+    )
+
+    fireEvent.click(screen.getByTestId('btn'))
+    expect(onClick).toHaveBeenCalledWith('card')
   })
 })
