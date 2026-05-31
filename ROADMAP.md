@@ -1,0 +1,28 @@
+# Roadmap
+
+Tracking what's planned, in progress, and recently shipped for the drwyn ecosystem. No dates — items move sections when reality demands.
+
+## In progress
+
+(nothing right now — v0.1 just shipped)
+
+## Planned (next)
+
+- **`apps/example`** — minimal Next.js App Router fixture exercising every plugin end-to-end. Used by Playwright tests.
+- **Playwright suite** — real-browser tests for the IntersectionObserver integration and SSR/hydration.
+- **`@drwyn/memory`** — companion package exposing a `memory` plugin and `MemoryStore` service for piping wrapped-component events into an AI agent's memory store. Primary backend target: consumer-supplied HTTP endpoint. Recipe-only adapters for [Mem0](https://github.com/mem0ai/mem0), [Zep](https://github.com/getzep/zep), and [Letta](https://github.com/letta-ai/letta).
+- **`docs/recipes/`** — wiring guides for analytics ([PostHog](https://posthog.com)), flags ([GrowthBook](https://www.growthbook.io)), and auth-gated regions.
+- **`npx drwyn init`** — tiny CLI that generates a `drwyn.d.ts` and a `drwyn-provider.tsx` snippet for new projects.
+
+## Planned (later)
+
+- **`@drwyn/plugin-replay`** — open-source session replay via [rrweb](https://github.com/rrweb-io/rrweb), scoped to the wrapped subtree.
+- **`@drwyn/plugin-sentiment`** — in-browser sentiment classifier via [Transformers.js](https://github.com/xenova/transformers.js); emits sentiment alongside events.
+- **`@drwyn/plugin-paywall`** (paid) — flexible paywall gating with built-in conversion analytics.
+- **`@drwyn/plugin-recordings`** (paid) — hosted session recordings with privacy redaction.
+- **A/B variant plugin** — a thin wrapper around `flag` that returns variants instead of pass/block.
+- **Server-component gating** — currently the gate phase runs only on client; explore patterns for App Router server-component gating.
+
+## Recently shipped
+
+- **v0.1.0** (2026-05-31) — Initial release. `<ActionProvider>` + `<Action>`, four built-in plugins, plugin runtime, TypeScript registry augmentation, ESM build.

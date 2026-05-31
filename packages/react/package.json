@@ -1,11 +1,34 @@
 {
   "name": "@drwyn/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Wrap any React/Next.js subtree with plugin-driven gating, analytics, flags, and visibility.",
   "license": "MIT",
+  "author": "drwyn contributors",
+  "homepage": "https://drwyn.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srj31/drwyn.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/srj31/drwyn/issues"
+  },
+  "keywords": [
+    "react",
+    "nextjs",
+    "analytics",
+    "feature-flags",
+    "visibility",
+    "intersection-observer",
+    "plugin",
+    "wrapper",
+    "typescript",
+    "app-router",
+    "use-client"
+  ],
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": ["dist", "README.md", "LICENSE"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -19,6 +42,9 @@
       "types": "./dist/plugins.d.ts",
       "import": "./dist/plugins.js"
     }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsup",
