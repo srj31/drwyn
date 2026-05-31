@@ -13,7 +13,6 @@ jobs:
     environment: production
     permissions:
       contents: write
-      pull-requests: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -31,18 +30,26 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Build library
-        run: bun run build
+      - name: Configure git for bot pushes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Create Release PR or Publish to npm
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          version: bun run version-packages
-          publish: bun run release
-          commit: 'chore: release'
-          title: 'chore: release'
+      - name: Apply pending changesets
+        run: bun run version-packages
+
+      - name: Commit and push version bump (if any)
+        run: |
+          if git diff --quiet; then
+            echo "No version changes — nothing to release."
+            exit 0
+          fi
+          git add .
+          git commit -m "chore: release [skip ci]"
+          git push origin HEAD:main
+
+      - name: Build and publish to npm
+        run: bun run release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
