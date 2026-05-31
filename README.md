@@ -19,14 +19,16 @@ Wrap any React or Next.js subtree with plugin-driven analytics, feature flags, m
 
 | Package | Description | Version |
 |---|---|---|
-| [`@drwyn/react`](./packages/react) | React/Next.js wrapper component with the plugin runtime and four built-in plugins | `0.1.0` |
+| [`@drwyn/react`](./packages/react) | React/Next.js wrapper component with the plugin runtime and four built-in plugins | `0.1.0-alpha.0` (alpha) |
+
+> ⚠️ **Alpha release.** drwyn is in active development. Expect breaking changes before v1.0. Published under the `alpha` npm tag — install with `@alpha` (see below).
 
 ## Getting started
 
 ```bash
-bun add @drwyn/react
-# or: npm install @drwyn/react
-# or: pnpm add @drwyn/react
+bun add @drwyn/react@alpha
+# or: npm install @drwyn/react@alpha
+# or: pnpm add @drwyn/react@alpha
 ```
 
 See the [docs site](https://drwyn.dev) (or the [`docs/`](./docs) folder) for usage, concepts, and recipes.

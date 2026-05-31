@@ -29,8 +29,8 @@ export const metadata: Metadata = {
 }
 
 const banner = (
-  <Banner storageKey="drwyn-0-1-banner">
-    drwyn v0.1 has shipped — early release, API may evolve.
+  <Banner storageKey="drwyn-0-1-alpha-banner">
+    drwyn v0.1.0-alpha — install with <code>@alpha</code>. API may change before v0.1 final.
   </Banner>
 )
 

@@ -2,7 +2,7 @@
 '@drwyn/react': minor
 ---
 
-Initial public release.
+Initial alpha release (`0.1.0-alpha.0`). Published under the `alpha` npm tag — install with `bun add @drwyn/react@alpha`. API may change before v0.1 final.
 
 - `<ActionProvider>` for registering plugins and services at the app root.
 - `<Action>` wrapper component with `region` (default) and `inline` modes.

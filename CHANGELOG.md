@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] — 2026-05-31
+## [0.1.0-alpha.0] — 2026-05-31
+
+> ⚠️ **Alpha release.** The API may change before v0.1.0 final. Published under the `alpha` npm tag — install with `bun add @drwyn/react@alpha`.
 
 ### Added
 
@@ -29,5 +31,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ESM-only build with preserved `'use client'` directive for Next.js App Router.
 - Three subpath exports: `@drwyn/react`, `@drwyn/react/plugin`, `@drwyn/react/plugins`.
 
-[Unreleased]: https://github.com/srj31/drwyn/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/srj31/drwyn/releases/tag/v0.1.0
+[Unreleased]: https://github.com/srj31/drwyn/compare/v0.1.0-alpha.0...HEAD
+[0.1.0-alpha.0]: https://github.com/srj31/drwyn/releases/tag/v0.1.0-alpha.0

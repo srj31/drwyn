@@ -25,4 +25,4 @@ Tracking what's planned, in progress, and recently shipped for the drwyn ecosyst
 
 ## Recently shipped
 
-- **v0.1.0** (2026-05-31) — Initial release. `<ActionProvider>` + `<Action>`, four built-in plugins, plugin runtime, TypeScript registry augmentation, ESM build.
+- **v0.1.0-alpha.0** (2026-05-31) — Initial alpha release. `<ActionProvider>` + `<Action>`, four built-in plugins, plugin runtime, TypeScript registry augmentation, ESM build. Published under the `alpha` npm tag.
