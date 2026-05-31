@@ -4,5 +4,7 @@
   "initialVersions": {
     "@drwyn/react": "0.0.0"
   },
-  "changesets": []
+  "changesets": [
+    "initial-release"
+  ]
 }
