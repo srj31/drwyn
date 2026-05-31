@@ -23,8 +23,9 @@ export const visibility = definePlugin({
   visibility: {
     threshold: 0.5,
     onVisible: (cfg, ctx) => {
-      const state = ((cfg as VisibilityConfig & { __drwynFired?: FiredState }).__drwynFired ??=
-        { fired: false })
+      const state = ((cfg as VisibilityConfig & { __drwynFired?: FiredState }).__drwynFired ??= {
+        fired: false,
+      })
       if (cfg.once && state.fired) return
       state.fired = true
       if ('event' in cfg && cfg.event) {

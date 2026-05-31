@@ -11,10 +11,7 @@ export type DOMEventName =
 
 export type PluginPhase = 'gate' | 'mount' | 'event' | 'visibility'
 
-export type GateResult =
-  | { kind: 'pass' }
-  | { kind: 'block' }
-  | { kind: 'replace'; node: ReactNode }
+export type GateResult = { kind: 'pass' } | { kind: 'block' } | { kind: 'replace'; node: ReactNode }
 
 export interface ActionServicesRegistry {
   sink: (event: { name: string; props?: Record<string, unknown> | undefined }) => void

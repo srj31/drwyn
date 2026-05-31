@@ -2,10 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Action } from '../src/action'
 import { definePlugin } from '../src/plugin/define'
-import {
-  __resetPoolForTests,
-  __setObserverFactoryForTests,
-} from '../src/plugin/intersection'
+import { __resetPoolForTests, __setObserverFactoryForTests } from '../src/plugin/intersection'
 import { ActionProvider } from '../src/provider'
 
 declare module '../src/types' {

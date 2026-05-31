@@ -12,8 +12,7 @@ export const flag = definePlugin({
   gate: (cfg, ctx) => {
     const key = typeof cfg === 'string' ? cfg : cfg.key
     const fallback = typeof cfg === 'string' ? undefined : cfg.fallback
-    const defaultWhenUnknown =
-      typeof cfg === 'string' ? true : (cfg.defaultWhenUnknown ?? true)
+    const defaultWhenUnknown = typeof cfg === 'string' ? true : (cfg.defaultWhenUnknown ?? true)
 
     const value = ctx.services.flagSource.isOn(key)
     const on = value === undefined ? defaultWhenUnknown : value

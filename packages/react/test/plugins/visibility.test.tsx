@@ -1,10 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Action } from '../../src/action'
-import {
-  __resetPoolForTests,
-  __setObserverFactoryForTests,
-} from '../../src/plugin/intersection'
+import { __resetPoolForTests, __setObserverFactoryForTests } from '../../src/plugin/intersection'
 import { visibility } from '../../src/plugins/visibility'
 import { ActionProvider } from '../../src/provider'
 

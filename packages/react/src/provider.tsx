@@ -27,19 +27,16 @@ const defaultOnErrorDev: OnError = (err, name, phase) => {
 
 const defaultOnErrorProd: OnError = () => {}
 
-export function ActionProvider({
-  plugins,
-  services,
-  onError,
-  children,
-}: ActionProviderProps) {
+export function ActionProvider({ plugins, services, onError, children }: ActionProviderProps) {
   const runtime = useMemo<ActionRuntime>(() => {
     const resolvedOnError =
-      onError ??
-      (process.env.NODE_ENV === 'production' ? defaultOnErrorProd : defaultOnErrorDev)
+      onError ?? (process.env.NODE_ENV === 'production' ? defaultOnErrorProd : defaultOnErrorDev)
     return {
       plugins,
-      services: { ...({} as ActionServicesRegistry), ...(services ?? {}) } as ActionServicesRegistry,
+      services: {
+        ...({} as ActionServicesRegistry),
+        ...(services ?? {}),
+      } as ActionServicesRegistry,
       onError: resolvedOnError,
     }
   }, [plugins, services, onError])
@@ -55,8 +52,7 @@ export function ActionProvider({
     for (const [propKey, names] of byKey) {
       if (names.length > 1) {
         devWarn(
-          `propKey "${propKey}" claimed by multiple plugins: ${names.join(', ')}. ` +
-            `Only the first will receive that prop's config.`,
+          `propKey "${propKey}" claimed by multiple plugins: ${names.join(', ')}. Only the first will receive that prop's config.`,
         )
       }
     }

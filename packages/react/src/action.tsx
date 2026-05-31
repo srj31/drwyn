@@ -17,17 +17,13 @@ import {
 } from 'react'
 import { composeRefs } from './plugin/compose-ref'
 import { devWarn } from './plugin/dev-warn'
-import { observe, unobserve, type VisibilityThreshold } from './plugin/intersection'
+import { type VisibilityThreshold, observe, unobserve } from './plugin/intersection'
 import { buildHandlers, runGate, runMount } from './plugin/runtime'
 import { useActionRuntime } from './provider'
 import type { ActionPluginRegistry, DOMEventName, Plugin } from './types'
 
 type RegistryToProps = {
-  [K in keyof ActionPluginRegistry as ActionPluginRegistry[K] extends Plugin<
-    any,
-    any,
-    infer P
-  >
+  [K in keyof ActionPluginRegistry as ActionPluginRegistry[K] extends Plugin<any, any, infer P>
     ? P
     : never]?: ActionPluginRegistry[K] extends Plugin<infer C, any, any> ? C : never
 }
@@ -57,8 +53,7 @@ function warnOnUnknownProps(
   for (const key of Object.keys(configs)) {
     if (!knownPropKeys.has(key)) {
       devWarn(
-        `unknown <Action> prop "${key}" — no registered plugin claims this propKey. ` +
-          `Did you forget to add the plugin to <ActionProvider plugins={[...]}>?`,
+        `unknown <Action> prop "${key}" — no registered plugin claims this propKey. Did you forget to add the plugin to <ActionProvider plugins={[...]}>?`,
       )
     }
   }
@@ -132,11 +127,7 @@ export function Action(props: ActionProps): ReactNode {
   const gateResult = runGate(runtime.plugins, configs, ctx, runtime.onError)
 
   const renderTarget: ReactNode =
-    gateResult.kind === 'block'
-      ? null
-      : gateResult.kind === 'replace'
-        ? gateResult.node
-        : children
+    gateResult.kind === 'block' ? null : gateResult.kind === 'replace' ? gateResult.node : children
 
   const handlers = useMemo(
     () =>

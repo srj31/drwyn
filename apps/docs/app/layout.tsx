@@ -37,18 +37,14 @@ const banner = (
 const navbar = (
   <Navbar
     logo={
-      <span style={{ fontWeight: 700, letterSpacing: '-0.02em', fontSize: '1.25rem' }}>
-        drwyn
-      </span>
+      <span style={{ fontWeight: 700, letterSpacing: '-0.02em', fontSize: '1.25rem' }}>drwyn</span>
     }
     projectLink="https://github.com/srj31/drwyn"
   />
 )
 
 const footer = (
-  <Footer>
-    MIT {new Date().getFullYear()} © drwyn contributors. Built with Nextra.
-  </Footer>
+  <Footer>MIT {new Date().getFullYear()} © drwyn contributors. Built with Nextra.</Footer>
 )
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

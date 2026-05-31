@@ -32,11 +32,7 @@ function getPool(threshold: VisibilityThreshold) {
   return pool
 }
 
-export function observe(
-  el: Element,
-  threshold: VisibilityThreshold,
-  cb: Callback,
-): void {
+export function observe(el: Element, threshold: VisibilityThreshold, cb: Callback): void {
   const pool = getPool(threshold)
   pool.callbacks.set(el, cb)
   pool.observer.observe(el)

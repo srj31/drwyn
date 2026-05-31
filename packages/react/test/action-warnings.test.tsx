@@ -42,9 +42,7 @@ describe('dev warnings', () => {
         </Action>
       </ActionProvider>,
     )
-    expect(warn).toHaveBeenCalledWith(
-      expect.stringMatching(/unknown <Action> prop "notAPlugin"/i),
-    )
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/unknown <Action> prop "notAPlugin"/i))
   })
 
   it('warns when two plugins claim the same propKey', () => {
