@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/react",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "description": "Wrap any React/Next.js subtree with plugin-driven gating, analytics, flags, and visibility.",
   "license": "MIT",
   "author": "drwyn contributors",
@@ -28,7 +28,11 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
