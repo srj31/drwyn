@@ -1,0 +1,48 @@
+---
+title: Built-in plugins
+description: The four plugins shipped with @drwyn/react/plugins.
+---
+
+# Built-in plugins
+
+Four plugins ship in `@drwyn/react/plugins`. Each is small (~25–50 lines of source), serves as a reference implementation, and covers one of the four lifecycle phases.
+
+| Plugin | `propKey` | Phase | What it does |
+|---|---|---|---|
+| [`analytics`](/plugins/analytics) | `track` | events | Emit named events on DOM clicks, focuses, submits |
+| [`flag`](/plugins/flag) | `flag` | gate | Render-time feature flag gating with fail-open |
+| [`mount`](/plugins/mount) | `mount` | mount | Mount/unmount events (event form or callback form) |
+| [`visibility`](/plugins/visibility) | `visibility` | visibility | Impression tracking with `once` + `threshold` |
+
+Import what you need:
+
+```ts
+import { analytics, flag, mount, visibility } from '@drwyn/react/plugins'
+```
+
+Register on your provider:
+
+```tsx
+<ActionProvider plugins={[analytics, flag, mount, visibility]} services={{ /* … */ }}>
+  ...
+</ActionProvider>
+```
+
+Each plugin pre-augments the `ActionPluginRegistry` so the matching `Action` prop is typed without any setup on your side. You can omit plugins you don't use — only the ones in your `plugins=[...]` array participate at runtime.
+
+## Composability
+
+All four work together on one `Action`. The runtime walks them in registration order for each phase.
+
+```tsx
+<Action
+  flag="new-checkout"
+  mount={{ event: 'pricing_loaded' }}
+  visibility={{ event: 'pricing_viewed', once: true }}
+  track={{ click: 'pricing_clicked' }}
+>
+  <PricingCard />
+</Action>
+```
+
+Read top-to-bottom: gate first, then on render the mount fires, then visibility observes, then events handle interactions. See [The four phases](/concepts/lifecycle) for the underlying mechanics.

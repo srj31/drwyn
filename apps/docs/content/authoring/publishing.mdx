@@ -1,0 +1,135 @@
+---
+title: Publishing to npm
+description: Package conventions for shipping a drwyn plugin.
+---
+
+# Publishing to npm
+
+A drwyn plugin is just an npm package that exports a `Plugin` object (via `definePlugin`) and augments `ActionPluginRegistry`. Here are the conventions to follow so consumers can use it cleanly.
+
+## `package.json` skeleton
+
+```json
+{
+  "name": "@yourname/drwyn-confetti",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "peerDependencies": {
+    "@drwyn/react": ">=0.1.0",
+    "react": ">=18"
+  }
+}
+```
+
+### Important fields
+
+- **`"type": "module"`** — ESM only. The whole drwyn ecosystem is ESM.
+- **`peerDependencies`** — `@drwyn/react` and `react` MUST be peers. Don't bundle them, don't list them as `dependencies`. The consumer's install of `@drwyn/react` is the source of truth; bundling your own would create duplicate React Contexts and silent failures.
+- **`"files"`** — explicitly list `dist`, `README.md`, `LICENSE`. Don't ship your source or tests.
+
+## Source layout
+
+Use the same pattern as the built-in plugins:
+
+```
+src/
+  index.ts          ← exports the plugin + augments the registry
+```
+
+```ts filename="src/index.ts"
+import { definePlugin } from '@drwyn/react/plugin'
+
+export type ConfettiConfig = { color: 'gold' | 'silver'; duration?: number }
+
+export const confetti = definePlugin({
+  name: 'confetti',
+  propKey: 'celebrate',
+  config: {} as ConfettiConfig,
+  events: {
+    click: (_e, cfg) => {
+      // your behavior here
+    },
+  },
+})
+
+declare module '@drwyn/react' {
+  interface ActionPluginRegistry {
+    confetti: typeof confetti
+  }
+}
+```
+
+Build with **tsup** (or any ESM-emitting bundler that produces `.d.ts`):
+
+```ts filename="tsup.config.ts"
+import { defineConfig } from 'tsup'
+
+export default defineConfig({
+  entry: { index: 'src/index.ts' },
+  format: ['esm'],
+  dts: true,
+  external: ['@drwyn/react', 'react', 'react-dom'],
+})
+```
+
+## README snippet for consumers
+
+Include this in your plugin's README so consumers can copy/paste the install + setup:
+
+````markdown
+## Install
+
+```bash
+bun add @yourname/drwyn-confetti
+```
+
+## Use
+
+```tsx
+import { ActionProvider, Action } from '@drwyn/react'
+import { confetti } from '@yourname/drwyn-confetti'
+
+<ActionProvider plugins={[confetti]}>
+  <Action celebrate={{ color: 'gold', duration: 2000 }}>
+    <button>Submit</button>
+  </Action>
+</ActionProvider>
+```
+````
+
+## Naming conventions
+
+- **Scoped packages** preferred: `@yourname/drwyn-something` or `@yourorg/drwyn-something`. Avoids npm naming conflicts and signals provenance.
+- **`drwyn-` prefix** in the name so search/discovery works (`npm search drwyn`).
+- **`propKey` distinctiveness** — pick a key unlikely to collide with other plugins. `celebrate` is fine; `track` would collide with the built-in `analytics`. When in doubt, namespace: `xCelebrate`, `confettiClick`, etc.
+
+## Testing
+
+The runtime is fully unit-testable without React. Author your tests with Vitest:
+
+```ts
+import { describe, it, expect, vi } from 'vitest'
+import { runMount, buildHandlers } from '@drwyn/react/plugin'  // (not currently exposed; see below)
+import { confetti } from '../src'
+```
+
+Note: the runtime helpers (`runGate`/`runMount`/`buildHandlers`) aren't currently in the public exports — for v0.1 you can either (a) call your plugin's phase functions directly with a fake `ctx`, or (b) use React Testing Library with a fake `<ActionProvider>`.
+
+## Version compatibility
+
+Pin the major of `@drwyn/react` in your peer dep range. We follow semver strictly — breaking changes to the plugin interface bump the core major.
+
+```json
+"peerDependencies": {
+  "@drwyn/react": ">=0.1.0 <1.0.0"
+}
+```
+
+Pre-1.0, expect minor breaking changes. From v1.0 onwards, the plugin contract will be stable.

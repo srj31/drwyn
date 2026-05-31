@@ -1,0 +1,36 @@
+---
+title: Concepts
+description: How ActionProvider, Action, and plugins fit together.
+---
+
+# Concepts
+
+drwyn has a small surface — two components, one helper, four hooks per plugin — but the way they compose is worth understanding before you build with it.
+
+## The three layers
+
+```
+                  drwyn library
+                       │
+                       │  knows: <Action>, plugin runtime, the four phases
+                       │
+                       ▼
+                    plugins
+                       │
+                       │  know: their config shape, which phases they hook,
+                       │         which service interface they use
+                       │
+                       ▼
+                  your app code
+                       │
+                       │  knows: PostHog, GrowthBook, your backend
+                       │  wires: services on <ActionProvider>
+```
+
+Each layer is ignorant of the layer below it. The library has no idea PostHog exists; the analytics plugin only knows it calls `ctx.services.sink({...})`; your app code knows the destinations and wires them up once.
+
+## Read these in order
+
+- [**Provider + Action**](/concepts/provider-and-action) — the two top-level pieces every drwyn app uses.
+- [**The four phases**](/concepts/lifecycle) — when `gate`, `mount`, `events`, and `visibility` fire.
+- [**Inline vs region**](/concepts/inline-vs-region) — which wrap mode to pick.

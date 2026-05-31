@@ -1,0 +1,30 @@
+---
+title: Changelog
+description: Release history for @drwyn/react.
+---
+
+# Changelog
+
+All notable changes to `@drwyn/react`. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [semver](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] — 2026-05-31
+
+### Added
+
+- `ActionProvider` for registering plugins and services at the app root.
+- `Action` wrapper component with two modes:
+  - `region` (default): wraps children in a configurable element (`as` prop).
+  - `inline`: clones the single child element and merges drwyn's handlers and ref.
+- Plugin runtime with four lifecycle phases: `gate`, `mount`, `event`, `visibility`.
+- `definePlugin` helper for authoring plugins with full TypeScript inference.
+- Four built-in plugins:
+  - `analytics` — DOM event tracking through a consumer-supplied sink.
+  - `flag` — render-time feature flag gating with fail-open default and replacement/fallback support.
+  - `mount` — mount/unmount events (event form or callback form).
+  - `visibility` — IntersectionObserver-backed impression tracking with `once` and `threshold` support.
+- Shared IntersectionObserver pool keyed by threshold to avoid per-element observers.
+- Dev-only warnings for unknown `Action` props, `propKey` collisions, and inline-mode constraint violations.
+- Fail-open error isolation: a buggy plugin never crashes the host app; errors flow through `onError`.
+- TypeScript module augmentation via `ActionPluginRegistry` and `ActionServicesRegistry` for typed props and services.
+- ESM-only build with preserved `'use client'` directive for Next.js App Router.
+- Three subpath exports: `@drwyn/react`, `@drwyn/react/plugin`, `@drwyn/react/plugins`.

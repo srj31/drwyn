@@ -1,0 +1,56 @@
+---
+title: mount plugin
+description: Fire events or callbacks when an Action mounts and unmounts.
+---
+
+# `mount`
+
+Runs once when an `Action` enters the DOM, optionally with a cleanup that runs on unmount. Two usage forms.
+
+## Usage — event form
+
+Emit an event through the same `sink` your analytics uses:
+
+```tsx
+import { mount } from '@drwyn/react/plugins'
+
+<Action mount={{ event: 'pricing_loaded', props: { region: 'us' } }}>
+  <PricingCard />
+</Action>
+```
+
+On mount, calls `ctx.services.sink({ name: 'pricing_loaded', props: { region: 'us' } })`. No cleanup — event form is mount-only.
+
+## Usage — callback form
+
+Run arbitrary side effects:
+
+```tsx
+<Action mount={{ onMount: () => prefetchData(), onUnmount: () => cleanup() }}>
+  <PricingCard />
+</Action>
+```
+
+Useful for analytics tools with a different API (not the `sink`), data prefetching, custom setup/teardown.
+
+## Config
+
+```ts
+type MountConfig =
+  | { event: string; props?: Record<string, unknown> }   // event form
+  | { onMount?: () => void; onUnmount?: () => void }     // callback form
+```
+
+The two forms are mutually exclusive — pick one per `Action`.
+
+## When does it fire?
+
+After React commits the element to the DOM. Specifically: `useEffect` semantics. Runs in `plugins=[...]` order; cleanup runs in **reverse** order on unmount (same as React's own `useEffect`).
+
+## Comparison with React's `useEffect`
+
+Why not just use `useEffect` directly in your component? You can — but the `mount` plugin gives you:
+
+- A consistent event-emission pattern that flows through the same sink as `analytics`.
+- Co-location of "what happens when this appears" with "what happens when it's interacted with" on one `Action`.
+- Server-rendered code that doesn't have hooks can still be wrapped (the `useEffect` happens inside `Action`, not your component).

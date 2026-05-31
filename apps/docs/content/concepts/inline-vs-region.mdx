@@ -1,0 +1,84 @@
+---
+title: Inline vs region
+description: Two wrap modes for the Action component — when to use each.
+---
+
+# Inline vs region
+
+The `Action` component supports two ways of attaching itself to children. Pick the one that matches what you're wrapping.
+
+## Region mode (default)
+
+Renders a wrapping element around the children:
+
+```tsx
+<Action visibility={{ event: 'card_viewed' }}>
+  <PricingCard />
+</Action>
+
+// renders:
+<div data-drwyn-action="<id>" onClick={...}>
+  <PricingCard />
+</div>
+```
+
+- Works with **any** children — multiple elements, fragments, strings, conditionals.
+- The wrapping element receives drwyn's ref, observer target, and event handlers.
+- Default tag is `div`; override with `as="section"`, `as="article"`, etc.
+
+```tsx
+<Action as="section" visibility={{ event: 'p_view' }}>
+  <h1>Pricing</h1>
+  <PricingCard />
+</Action>
+```
+
+Trade-off: **one extra DOM node**. Usually fine, occasionally inconvenient (e.g. wrapping an anchor inside a paragraph would break inline flow).
+
+## Inline mode
+
+Clones the single child element and merges drwyn's handlers and ref into it. **No extra DOM node.**
+
+```tsx
+<Action mode="inline" track={{ click: 'cta' }}>
+  <button>Buy</button>
+</Action>
+
+// renders:
+<button onClick={mergedHandler}>Buy</button>
+```
+
+Use for **interactive primitives** — `button`, anchor, `input` — where the wrapping element would interfere with layout or accessibility.
+
+### Constraints
+
+Inline mode has stricter rules than region mode:
+
+1. **Exactly one element child.** Multiple children, strings, fragments, conditionals that evaluate to nothing → dev warning + fallback to region mode.
+2. **Child must accept `ref`.** Native DOM elements always do; React components must use `forwardRef` (React 18) or accept `ref` as a prop (React 19+). If the ref doesn't land, visibility/element-target features degrade silently with a dev warning naming the offending plugin.
+3. **Handler merging is composition.** The child's own `onClick` runs first; then drwyn's plugin handlers run in order. `preventDefault` from the child doesn't skip plugin handlers.
+
+If any constraint is violated, drwyn warns loudly in dev and falls back to region mode (you get the wrapper). Friendly failure.
+
+## You've seen this in
+
+**Radix UI** calls it `asChild`:
+
+```tsx
+<Dialog.Trigger asChild>
+  <Button>Open</Button>
+</Dialog.Trigger>
+```
+
+Same mechanism (`React.cloneElement` + ref composition), different name. **Reach UI** had `as={Comp}`. **React Aria** uses `mergeProps`/`useObjectRef` directly. All the same underlying pattern.
+
+## Quick rule of thumb
+
+| Wrapping… | Use |
+|---|---|
+| A single `button`, anchor, `input` | `inline` |
+| A card, panel, section with multiple children | `region` (default) |
+| Anything that might change shape (multi-child, conditional) | `region` (default) |
+| Something where a wrapping element would break layout | `inline` |
+
+When in doubt, **region** is safer — it always works. Opt into `inline` deliberately when you need to avoid the wrapper.

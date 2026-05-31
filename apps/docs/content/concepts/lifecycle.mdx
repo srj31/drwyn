@@ -1,0 +1,130 @@
+---
+title: The four phases
+description: When gate, mount, events, and visibility fire — and why each uses a different underlying mechanism.
+---
+
+# The four phases
+
+Every plugin can hook up to four lifecycle moments. Each runs at a specific point and uses a specific underlying mechanism.
+
+```
+TIME ─────────────────────────────────────────────────────────────────────────────►
+
+  RENDER                POST-COMMIT             USER SCROLLS              USER CLICKS
+  (sync, during         (useEffect runs         (IntersectionObserver     (DOM event
+   <Action>'s render)    after commit)           fires when in view)       fires)
+       │                       │                       │                       │
+       ▼                       ▼                       ▼                       ▼
+     gate                   mount                 visibility                 event
+```
+
+| Phase | React mechanism | Fires when |
+|---|---|---|
+| `gate` | Inline code during render | Every render of `Action`, synchronously |
+| `mount` | `useEffect(fn, [...])` | After React commits the element to the DOM |
+| `event` | JSX `onClick`, `onFocus`, etc. | Every DOM event |
+| `visibility` | IntersectionObserver pool | When the element enters/leaves the viewport |
+
+## `gate` — decide what to render
+
+Gate runs synchronously inside `Action`'s render function and returns one of three results:
+
+```ts
+type GateResult =
+  | { kind: 'pass' }                       // continue rendering children
+  | { kind: 'block' }                      // render null, stop all phases
+  | { kind: 'replace'; node: ReactNode }   // render replacement, continue other phases
+```
+
+### `pass`
+
+The default. Means "I have no opinion." Children render normally.
+
+### `block`
+
+Hard stop. Children don't render. **All downstream phases skip** — no mount, no visibility, no event handlers. Use this for "this should not exist for this user."
+
+### `replace`
+
+Render the supplied `node` instead of children. **Other phases continue** on the replacement subtree.
+
+This is non-obvious and important: a paywall replacement still gets impression tracking; an A/B variant still gets click analytics; a fallback login prompt still gets visibility events. If you wanted full short-circuit, use `block` (with no fallback).
+
+### Multiple gates — short-circuit
+
+Plugins are tried in `plugins=[...]` order. First `block` or `replace` wins:
+
+```tsx
+plugins={[paywall, auth]}
+// If paywall returns replace, auth's gate is never called.
+// Plugin order is load-bearing.
+```
+
+### Gate fail-open on throw
+
+If a `gate` function throws, the runtime catches it, calls `onError(err, pluginName, 'gate')`, and treats the gate as a `pass` result — children render. This is **fail-open by design**: a buggy flag source should not make UI disappear from your entire app. Hidden UI is the worst failure mode for users.
+
+If you specifically need fail-closed (e.g. paywall safety), catch in your plugin and return a `block` result explicitly.
+
+## `mount` — react to DOM appearance
+
+Mount runs after React commits the element to the DOM, in `useEffect`. Returns an optional cleanup function:
+
+```ts
+mount?: (cfg, ctx) => void | (() => void)
+```
+
+Mounts run in `plugins=[...]` order. Cleanups run in **reverse** registration order (LIFO) on unmount — the same discipline as React's own `useEffect`, Express middleware, and any "resource stack." Why: if plugin A sets up something plugin B uses, B should tear down first while A's resources are still available.
+
+## `event` — react to user interactions
+
+```ts
+events?: Partial<Record<DOMEventName, (e, cfg, ctx) => void>>
+```
+
+Each plugin declares handlers for any of `click`, `focus`, `blur`, `change`, `submit`, `mouseenter`, `mouseleave`. The runtime merges all plugins' handlers for a given event into one. The merged handler runs each plugin's handler in registration order; a throw in one doesn't stop the others.
+
+In **inline mode**, the merged handler is also composed with the child's own handler:
+
+```
+Child's own handler runs FIRST → then drwyn's plugin handlers (in array order)
+```
+
+A `preventDefault()` from the child does **not** stop plugin handlers (analytics shouldn't be skipped because a click was prevented). A `stopPropagation()` from a plugin handler doesn't stop later plugin handlers in the merged set — it only affects DOM bubbling.
+
+## `visibility` — react to viewport intersection
+
+```ts
+visibility?: {
+  onVisible?: (cfg, ctx) => void
+  onHidden?: (cfg, ctx) => void
+  threshold?: 0 | 0.25 | 0.5 | 1   // default 0.5
+}
+```
+
+drwyn maintains a **shared IntersectionObserver pool** keyed by threshold. Every `Action` using the same threshold shares one underlying observer — efficient even with hundreds of wrapped elements on the page.
+
+When the element crosses the threshold, `onVisible(cfg, ctx)` fires; when it leaves, `onHidden(cfg, ctx)` fires. The built-in `visibility` plugin layers `once: true` on top for impression-style "fire once and unregister" semantics.
+
+## Composing phases on one `Action`
+
+A real `Action` typically hooks 2–3 phases:
+
+```tsx
+<Action
+  flag="new-checkout"                                        // gate
+  mount={{ event: 'pricing_card_loaded' }}                   // mount
+  visibility={{ event: 'pricing_card_viewed', once: true }}  // visibility
+  track={{ click: 'pricing_card_clicked' }}                  // event
+>
+  <PricingCard />
+</Action>
+```
+
+Reading top to bottom, you read the entire lifecycle:
+- "Is this allowed to render?" (gate)
+- "What happens when it appears?" (mount)
+- "What happens when it's seen?" (visibility)
+- "What happens when it's interacted with?" (event)
+
+That declarative readability is why we have four phases instead of one mega-callback.

@@ -1,0 +1,133 @@
+---
+title: API reference
+description: Public exports of @drwyn/react, @drwyn/react/plugin, and @drwyn/react/plugins.
+---
+
+# API reference
+
+Quick reference for everything exported by `@drwyn/react`.
+
+## `@drwyn/react`
+
+For app consumers.
+
+### `ActionProvider`
+
+Root provider. Registers plugins and services.
+
+```tsx
+<ActionProvider
+  plugins={ReadonlyArray<Plugin>}
+  services={Partial<ActionServicesRegistry>}
+  onError={(err, pluginName, phase) => void}
+>
+  children
+</ActionProvider>
+```
+
+| Prop | Required | Description |
+|---|---|---|
+| `plugins` | yes | Plugins to register. Order = execution order. |
+| `services` | no | Wiring for `sink`, `flagSource`, `logger`, etc. |
+| `onError` | no | Called when any plugin phase throws. Defaults: dev → `console.error`, prod → no-op. |
+
+### `Action`
+
+Wrapper component. Reads context, runs plugin lifecycle, renders.
+
+```tsx
+<Action
+  mode="inline" | "region"
+  as="div" | "section" | ...      // region mode only
+  {...pluginConfigs}
+>
+  children
+</Action>
+```
+
+| Prop | Default | Description |
+|---|---|---|
+| `mode` | `"region"` | Wrap mode. See [Inline vs region](/concepts/inline-vs-region). |
+| `as` | `"div"` | Tag for region mode. Ignored in inline mode. |
+| `children` | required | What to wrap. |
+| *plugin propKey* | none | One prop per registered plugin (named by its `propKey`), typed by the plugin's config. |
+
+### `useActionRuntime()`
+
+Escape-hatch hook. Returns the current runtime (plugins, services, onError).
+
+```ts
+const runtime = useActionRuntime()
+// runtime.plugins
+// runtime.services.sink({ name: '...', props: {...} })
+// runtime.onError(err, 'myPlugin', 'event')
+```
+
+Throws if used outside `ActionProvider`.
+
+### Types
+
+```ts
+type DOMEventName
+type PluginPhase = 'gate' | 'mount' | 'event' | 'visibility'
+type GateResult =
+  | { kind: 'pass' }
+  | { kind: 'block' }
+  | { kind: 'replace'; node: ReactNode }
+interface Plugin<Config, Name, PropKey>
+interface PluginContext
+interface ActionPluginRegistry      // empty, augmented by plugins
+interface ActionServicesRegistry    // sink, flagSource, logger
+type ActionProps                    // <Action>'s props
+type ActionProviderProps
+type ActionRuntime
+type OnError
+```
+
+## `@drwyn/react/plugin`
+
+For plugin authors. The minimal entry — no `Action`, no built-in plugins. Use this as a peer-dep-free import in your plugin packages.
+
+```ts
+import { definePlugin } from '@drwyn/react/plugin'
+import type {
+  Plugin,
+  PluginContext,
+  GateResult,
+  PluginPhase,
+  DOMEventName,
+} from '@drwyn/react/plugin'
+```
+
+See [definePlugin](/authoring/define-plugin).
+
+## `@drwyn/react/plugins`
+
+The four built-in plugins.
+
+```ts
+import { analytics, flag, mount, visibility } from '@drwyn/react/plugins'
+import type {
+  AnalyticsConfig,
+  FlagConfig,
+  MountConfig,
+  VisibilityConfig,
+} from '@drwyn/react/plugins'
+```
+
+| Export | Type | Page |
+|---|---|---|
+| `analytics` | `Plugin` | [docs](/plugins/analytics) |
+| `flag` | `Plugin` | [docs](/plugins/flag) |
+| `mount` | `Plugin` | [docs](/plugins/mount) |
+| `visibility` | `Plugin` | [docs](/plugins/visibility) |
+| `AnalyticsConfig` | type | inline in [analytics](/plugins/analytics) |
+| `FlagConfig` | type | inline in [flag](/plugins/flag) |
+| `MountConfig` | type | inline in [mount](/plugins/mount) |
+| `VisibilityConfig` | type | inline in [visibility](/plugins/visibility) |
+
+## Versioning
+
+`@drwyn/react` follows [semver](https://semver.org). Breaking changes to the plugin interface bump the core major.
+
+Current: **v0.1.0** — early release, API may evolve pre-1.0.

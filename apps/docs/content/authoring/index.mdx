@@ -1,0 +1,37 @@
+---
+title: Authoring plugins
+description: Write a plugin in ~25 lines and publish it to npm.
+---
+
+# Authoring plugins
+
+A plugin is a plain object that describes how to react to one of four lifecycle moments. Use `definePlugin` to get full TypeScript inference.
+
+## Minimum viable plugin
+
+```ts
+import { definePlugin } from '@drwyn/react/plugin'
+
+export const confetti = definePlugin({
+  name: 'confetti',
+  propKey: 'celebrate',
+  config: {} as { color: 'gold' | 'silver' },
+  events: {
+    click: (_e, cfg) => shootConfetti(cfg.color),
+  },
+})
+```
+
+That's a complete plugin. Whoever installs your package and registers `confetti` in `plugins=[...]` can now write `<Action celebrate={{ color: 'gold' }}>...</Action>`.
+
+## Read these in order
+
+- [**definePlugin**](/authoring/define-plugin) — the helper, the `Plugin` shape, and the four phases you can hook.
+- [**Registry augmentation**](/authoring/registry-augmentation) — how `<Action celebrate={...}>` gets typed via TypeScript module augmentation.
+- [**Publishing to npm**](/authoring/publishing) — package conventions, peer deps, naming, README snippet for consumers.
+
+## Three rules of plugin design
+
+1. **One propKey per plugin.** Multiple plugins can't share a `propKey`. Pick a short, distinctive name. Namespace if you're publishing publicly: e.g. `xRecordings` instead of `recordings`.
+2. **Configs are tool-neutral; services are app-specific.** Your plugin's `config` describes the data shape (what the consumer types as the prop). Your plugin's calls to `ctx.services.*` describe the interface (what consumers wire up at the provider). Don't import third-party libraries in your plugin — name the service interface and let the consumer wire the implementation.
+3. **Don't crash the host.** If your phase function throws, drwyn catches it and reports via `onError`. But don't rely on that — validate inputs, default missing values, fail gracefully.

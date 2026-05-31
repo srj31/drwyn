@@ -1,0 +1,40 @@
+---
+title: drwyn
+description: Wrap any React/Next.js subtree with plugin-driven analytics, flags, mount/visibility events, and custom actions.
+---
+
+# drwyn
+
+Wrap any React or Next.js subtree with plugin-driven **analytics**, **feature flags**, **mount/visibility events**, and **custom actions** — composed onto one element with one component.
+
+```tsx
+<Action
+  flag="new-checkout"
+  track={{ click: 'cta_clicked', props: { plan: 'pro' } }}
+  visibility={{ event: 'cta_viewed', once: true }}
+>
+  <button>Buy</button>
+</Action>
+```
+
+One `Action` wraps your existing UI. Each prop on it activates a plugin: `flag` gates render, `track` fires analytics on click, `visibility` tracks impressions when the button scrolls into view. Add or remove plugins per call site.
+
+## What it solves
+
+You're already attaching analytics, flag checks, view tracking, and conditional logic to your components — usually as scattered `onClick`, `useEffect`, and ternary wrappers. drwyn collapses those concerns into a single declarative wrapper, and **separates the behavior from the destination**: a one-line `services.sink` swap moves you from PostHog to Segment without touching any `Action`.
+
+## Highlights
+
+- **Plugin-based.** Four built-in plugins (`analytics`, `flag`, `mount`, `visibility`). Author custom ones in ~25 lines.
+- **Strongly typed.** Plugin configs flow into `Action`'s props via TypeScript module augmentation — full autocomplete, no per-call-site generics.
+- **Two wrap modes.** `region` wraps with a `div`; `inline` clones the single child without extra DOM.
+- **Render-time gating.** The `flag` plugin decides what to render *during render* — no flicker.
+- **Server-component friendly.** Works in Next.js App Router (with `'use client'`).
+- **Tiny.** ~10 KB minified, ESM-only, zero runtime deps. React is a peer dep.
+
+## Next
+
+- [Quick start](/quickstart) — install and your first `Action` in five minutes.
+- [Concepts](/concepts) — how `ActionProvider`, `Action`, and plugins fit together.
+- [Built-in plugins](/plugins) — `analytics`, `flag`, `mount`, `visibility` with examples.
+- [Authoring plugins](/authoring) — `definePlugin` and registry augmentation.

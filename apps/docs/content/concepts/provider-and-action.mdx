@@ -1,0 +1,83 @@
+---
+title: Provider + Action
+description: How ActionProvider and Action form the runtime contract.
+---
+
+# Provider + Action
+
+drwyn has two top-level components a consumer touches: **`ActionProvider`** at the root, **`Action`** wherever you want to wrap UI.
+
+## `ActionProvider` — root registration
+
+```tsx
+'use client'
+
+import { ActionProvider } from '@drwyn/react'
+import { analytics, flag } from '@drwyn/react/plugins'
+
+<ActionProvider
+  plugins={[analytics, flag]}
+  services={{
+    sink: (e) => posthog.capture(e.name, e.props),
+    flagSource: { isOn: (key) => growthbook.isOn(key) },
+  }}
+  onError={(err, plugin, phase) => console.error(`[drwyn:${plugin}:${phase}]`, err)}
+>
+  <App />
+</ActionProvider>
+```
+
+It does three jobs:
+
+| Prop | Job |
+|---|---|
+| `plugins` | Lists every plugin that exists in this app. Plugin order is the execution order (first to `block`/`replace` wins gate; event handlers run in this order; mounts run forward, cleanups in reverse). |
+| `services` | The wiring layer. drwyn never imports analytics/flag clients itself — you provide functions matching the `ActionServicesRegistry` interface. |
+| `onError` | Called whenever any plugin phase throws. Default in dev: `console.error`. Default in prod: no-op. |
+
+Mount it once near the root of your app. Same pattern as **TanStack Query's `QueryClientProvider`**, **MUI's `ThemeProvider`**, **Apollo's `ApolloProvider`** — and just like those, every `Action` below it auto-picks-up the config via React Context.
+
+### Why `'use client'` in App Router
+
+The provider uses `useContext` and `useMemo`. Next.js App Router defaults components to server components, which can't use React hooks. The `'use client'` directive opts the file into the client bundle. Pages Router, Vite, and CRA ignore the directive — it's a no-op there.
+
+## `Action` — per-element behavior
+
+`Action` wraps any subtree:
+
+```tsx
+<Action
+  flag="new-checkout"
+  track={{ click: 'cta_clicked' }}
+  visibility={{ event: 'cta_viewed', once: true }}
+>
+  <button>Buy</button>
+</Action>
+```
+
+It doesn't render UI of its own. It does three things:
+
+1. **Reads its props.** Each non-reserved prop (`mode`, `as`, `children` are reserved) is treated as a config slice for the plugin whose `propKey` matches. `track` → analytics plugin; `flag` → flag plugin; `visibility` → visibility plugin.
+2. **Runs the lifecycle phases.** Gate during render, mount/visibility after commit, events when the user interacts.
+3. **Renders the result.** Either a wrapping `div` (region mode) or the cloned child (inline mode).
+
+The plugin-to-prop mapping is dynamic — there's no hardcoded list of supported props in the library. Add a plugin to your provider; its `propKey` becomes a valid `Action` prop. See [Authoring plugins](/authoring/define-plugin) for details.
+
+## What happens if you forget the provider
+
+If you use `Action` outside `ActionProvider`, you get a loud, helpful error:
+
+```
+[drwyn] useActionRuntime/<Action> used outside an <ActionProvider>.
+Wrap your app in <ActionProvider plugins={[...]}>.
+```
+
+This is by design — silent no-op (rendering children with no analytics, no flags) would create invisible production bugs. TanStack Query, Apollo, Zustand, next-auth all throw the same kind of error for the same reason.
+
+## The minimal mental model
+
+- One `ActionProvider` at the root, configured once.
+- Many `Action` instances throughout the tree, each declaring which plugins to apply.
+- Plugins live in the provider; configs live on each `Action`.
+
+That's the contract. Once you've internalized it, every part of the library follows from it.

@@ -1,0 +1,115 @@
+---
+title: Quick start
+description: Install @drwyn/react, wrap your app, and add your first <Action>.
+---
+
+# Quick start
+
+From zero to a wrapped component in five minutes.
+
+## 1. Install
+
+```bash
+bun add @drwyn/react
+# or: npm install @drwyn/react
+# or: pnpm add @drwyn/react
+```
+
+React 18+ is a peer dependency; we assume you've got that already.
+
+## 2. Wrap your app
+
+Create a thin client-component wrapper for `ActionProvider`. In Next.js App Router the `'use client'` directive is required; in Vite, CRA, or Pages Router it's ignored.
+
+```tsx filename="app/providers.tsx"
+'use client'
+
+import { ActionProvider } from '@drwyn/react'
+import { analytics, flag, mount, visibility } from '@drwyn/react/plugins'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ActionProvider
+      plugins={[analytics, flag, mount, visibility]}
+      services={{
+        sink: (e) => console.log('drwyn event:', e),
+        flagSource: { isOn: (key) => true }, // replace with real flag client
+      }}
+    >
+      {children}
+    </ActionProvider>
+  )
+}
+```
+
+Then mount it in your root layout:
+
+```tsx filename="app/layout.tsx"
+import { Providers } from './providers'
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  )
+}
+```
+
+## 3. Use `Action`
+
+`Action` wraps any subtree. Each prop on it activates a registered plugin.
+
+```tsx filename="app/pricing/page.tsx"
+import { Action } from '@drwyn/react'
+
+export default function PricingPage() {
+  return (
+    <Action
+      flag="new-checkout"
+      track={{ click: 'cta_clicked', props: { plan: 'pro' } }}
+      visibility={{ event: 'cta_viewed', once: true }}
+    >
+      <button>Buy</button>
+    </Action>
+  )
+}
+```
+
+What happens:
+- **`flag="new-checkout"`** — `Action` doesn't render the button if the flag is off (with `defaultWhenUnknown: true` fallback).
+- **`track={{ click: 'cta_clicked', ... }}`** — every click fires `sink({ name: 'cta_clicked', props: { plan: 'pro' } })`.
+- **`visibility={{ event: 'cta_viewed', once: true }}`** — first time the button enters the viewport, fires `sink({ name: 'cta_viewed' })`.
+
+That's it. Open your devtools console — the events will print as you scroll and click.
+
+## 4. Hook up a real backend
+
+Replace the placeholder `sink` and `flagSource` with your actual analytics and flag clients:
+
+```tsx
+import posthog from 'posthog-js'
+import { GrowthBook } from '@growthbook/growthbook'
+
+const growthbook = new GrowthBook({ /* … */ })
+
+<ActionProvider
+  plugins={[analytics, flag, mount, visibility]}
+  services={{
+    sink: (e) => posthog.capture(e.name, e.props),
+    flagSource: { isOn: (key) => growthbook.isOn(key) },
+  }}
+>
+  {children}
+</ActionProvider>
+```
+
+That's the *only* place in your codebase that knows about PostHog or GrowthBook. Switch tools by changing two lines.
+
+## Next
+
+- [Concepts](/concepts/provider-and-action) — how `ActionProvider` and `Action` fit together.
+- [Built-in plugins](/plugins) — `analytics`, `flag`, `mount`, `visibility` in depth.
+- [Inline mode](/concepts/inline-mode) — when to use `mode="inline"` vs the default region mode.

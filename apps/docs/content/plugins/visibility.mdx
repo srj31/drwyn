@@ -1,0 +1,88 @@
+---
+title: visibility plugin
+description: Impression tracking via IntersectionObserver — viewport entry/exit.
+---
+
+# `visibility`
+
+Fires events when the wrapped element enters or leaves the viewport. Built on a shared IntersectionObserver pool — efficient even with hundreds of `Action` instances on the same page.
+
+## Usage — event form
+
+```tsx
+import { visibility } from '@drwyn/react/plugins'
+
+<Action visibility={{ event: 'pricing_viewed', once: true }}>
+  <PricingCard />
+</Action>
+```
+
+When the card enters the viewport, fires `sink({ name: 'pricing_viewed' })`. With `once: true`, fires exactly once per `Action` instance — the typical impression-tracking pattern.
+
+## Usage — callback form
+
+```tsx
+<Action visibility={{ onVisible: () => loadHeavyData(), onHidden: () => abort() }}>
+  <BigChart />
+</Action>
+```
+
+Run arbitrary logic when visibility changes. Useful for lazy data loading, animations, autoplay/pause.
+
+## Config
+
+```ts
+type VisibilityConfig =
+  | {
+      event: string                                  // event form
+      props?: Record<string, unknown>
+      once?: boolean
+      threshold?: 0 | 0.25 | 0.5 | 1
+    }
+  | {
+      onVisible?: () => void                          // callback form
+      onHidden?: () => void
+      once?: boolean
+      threshold?: 0 | 0.25 | 0.5 | 1
+    }
+```
+
+| Field | Default | Meaning |
+|---|---|---|
+| `threshold` | `0.5` | What fraction of the element must be visible. One of `0`, `0.25`, `0.5`, `1`. |
+| `once` | `false` | If true, fire only the first time it becomes visible, then unregister. |
+
+## Why only 4 thresholds
+
+The IntersectionObserver pool is keyed by threshold. Restricting to a small fixed set keeps the pool tiny — one observer per threshold across the entire page. Practically, those four cover every real-world use case (just-visible, quarter, half, fully-visible).
+
+## SSR-safe
+
+The visibility hook runs in `useEffect`, so it never executes on the server. IntersectionObserver is feature-detected; in environments without it (rare), elements are treated as always visible.
+
+## Impression tracking pattern
+
+The canonical use case:
+
+```tsx
+<Action visibility={{ event: 'cta_viewed', once: true }}>
+  <CTA />
+</Action>
+```
+
+- Fires once when CTA first scrolls into view.
+- Doesn't re-fire if the user scrolls past and back.
+- After firing, the element is unregistered from the observer.
+
+Combine with `track` for full funnel coverage:
+
+```tsx
+<Action
+  visibility={{ event: 'cta_viewed', once: true }}
+  track={{ click: 'cta_clicked' }}
+>
+  <CTA />
+</Action>
+```
+
+Now you can compute click-through rate: clicks ÷ views.

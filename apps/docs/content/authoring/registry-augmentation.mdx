@@ -1,0 +1,109 @@
+---
+title: Registry augmentation
+description: How TypeScript module augmentation makes <Action celebrate={...}> typed.
+---
+
+# Registry augmentation
+
+`<Action>`'s prop type is computed from an interface called `ActionPluginRegistry`. The interface is **empty by default** in `@drwyn/react`. Plugins (and consumers) extend it via TypeScript module augmentation so `<Action>` autocompletes the right props with the right config shapes.
+
+## The empty interface
+
+```ts
+// inside @drwyn/react
+export interface ActionPluginRegistry {}
+```
+
+And the mapped type that builds `<Action>`'s props:
+
+```ts
+type ActionProps = {
+  mode?: 'inline' | 'region'
+  as?: keyof JSX.IntrinsicElements
+  children: ReactNode
+} & {
+  [K in keyof ActionPluginRegistry as
+    ActionPluginRegistry[K] extends Plugin<any, any, infer P> ? P : never
+  ]?: ActionPluginRegistry[K] extends Plugin<infer C, any, any> ? C : never
+}
+```
+
+Walks every entry in the registry, pulls the `PropKey` generic for the key, pulls the `Config` generic for the value type. Add an entry → add a typed prop.
+
+## Augmenting from a plugin file
+
+In your plugin's source file, add this declaration **at module scope** (anywhere in the file outside of a function):
+
+```ts
+// inside @somelib/drwyn-confetti
+import { definePlugin } from '@drwyn/react/plugin'
+
+export const confetti = definePlugin({
+  name: 'confetti',
+  propKey: 'celebrate',
+  config: {} as { color: 'gold' | 'silver' },
+  events: { click: (_e, cfg) => shootConfetti(cfg.color) },
+})
+
+declare module '@drwyn/react' {
+  interface ActionPluginRegistry {
+    confetti: typeof confetti
+  }
+}
+```
+
+After this, anyone who imports `confetti` from your package triggers the augmentation. They get `<Action celebrate={{ color: 'gold' }}>` autocompletion with no extra setup.
+
+## Augmenting from the consumer's side
+
+If a plugin author forgot to include the augmentation (or it's an in-house plugin you wrote yourself), the consumer adds it in their own `.d.ts`:
+
+```ts
+// drwyn.d.ts at the consumer's app root
+import type { confetti } from '@somelib/drwyn-confetti'
+
+declare module '@drwyn/react' {
+  interface ActionPluginRegistry {
+    confetti: typeof confetti
+  }
+}
+```
+
+The file just needs to exist in the consumer's TypeScript compilation (typically anywhere under `src/` or wherever their `tsconfig.json#include` covers).
+
+## Why not runtime introspection?
+
+The natural intuition: "the `plugins=[…]` array on the provider has all this info — why not derive types from it?"
+
+It doesn't work. React's JSX inference can't carry a generic from `<ActionProvider>` through Context to a downstream `<Action>` without forcing the consumer to write `<Action<typeof providerPlugins>>` at every call site. Module augmentation sidesteps the limitation entirely — the registry interface is a compile-time singleton, and `<Action>` always reads it without a per-call generic.
+
+## You've seen this in
+
+The same pattern is used by:
+
+- **TanStack Router** — augments a route registry; `router.navigate({ to: '/users/$id' })` autocompletes.
+- **Redux Toolkit** — consumers augment `RootState`; `useSelector((state) => state.user)` is typed.
+- **Vite** — `interface ImportMetaEnv { MY_VAR: string }`; `import.meta.env.MY_VAR` is typed.
+- **next-auth** — `declare module 'next-auth' { interface Session { ... } }`.
+- **Fastify** — `interface FastifyRequest { myDecorator: ... }`.
+
+It's the standard idiom for "let consumers extend the library without forking it."
+
+## Augmenting `ActionServicesRegistry`
+
+The same pattern works for services. If your plugin introduces a new service the consumer must wire up:
+
+```ts
+// inside your plugin package
+export interface MyServiceClient {
+  send: (msg: string) => Promise<void>
+}
+
+declare module '@drwyn/react' {
+  interface ActionServicesRegistry {
+    myService: MyServiceClient
+  }
+}
+```
+
+Now the consumer's `<ActionProvider services={{ myService: ... }}>` is type-checked, and `ctx.services.myService` is typed inside your plugin handlers — no casts.

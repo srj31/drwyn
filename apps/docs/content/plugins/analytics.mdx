@@ -1,0 +1,70 @@
+---
+title: analytics plugin
+description: DOM event tracking — click, focus, change, submit, etc.
+---
+
+# `analytics`
+
+DOM-event tracking. Listens for the user events you configure and forwards them to your sink.
+
+## Usage
+
+```tsx
+import { analytics } from '@drwyn/react/plugins'
+
+<ActionProvider plugins={[analytics]} services={{ sink: posthog.capture }}>
+  <Action mode="inline" track={{ click: 'cta_clicked', props: { plan: 'pro' } }}>
+    <button>Buy</button>
+  </Action>
+</ActionProvider>
+```
+
+When the user clicks, the analytics plugin calls:
+
+```ts
+ctx.services.sink({ name: 'cta_clicked', props: { plan: 'pro' } })
+```
+
+Your `sink` decides what to do with it — call PostHog, Segment, Mixpanel, or your own endpoint.
+
+## Config
+
+```ts
+type AnalyticsConfig = {
+  click?:  string
+  focus?:  string
+  blur?:   string
+  change?: string
+  submit?: string
+  props?:  Record<string, unknown>
+}
+```
+
+Each field maps a DOM event to an event name to emit. `props` is sent alongside every emitted event.
+
+```tsx
+<Action mode="inline" track={{ focus: 'input_focused', change: 'input_changed' }}>
+  <input name="email" />
+</Action>
+```
+
+## What plugin order means here
+
+If multiple plugins register a `click` handler, they all run in `plugins=[...]` order. The analytics plugin's click handler doesn't `preventDefault` or `stopPropagation` — it's a passive observer.
+
+## Tool-neutral by design
+
+The plugin doesn't import PostHog, Segment, or anyone else. The `sink` you wire up on `ActionProvider` is the translation point:
+
+```ts
+// PostHog
+sink: (e) => posthog.capture(e.name, e.props)
+
+// Segment
+sink: (e) => analytics.track(e.name, e.props)
+
+// Custom HTTP
+sink: (e) => fetch('/events', { method: 'POST', body: JSON.stringify(e) })
+```
+
+Switch tools by changing that one line — every `Action` with `track` set keeps working.

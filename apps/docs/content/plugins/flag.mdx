@@ -1,0 +1,94 @@
+---
+title: flag plugin
+description: Render-time feature flag gating via the gate phase.
+---
+
+# `flag`
+
+Render-time feature flag gating. Uses the `gate` phase, so the decision happens **during render** — no flicker, no flash of to-be-hidden content.
+
+## Usage
+
+### Simple form — block when off
+
+```tsx
+import { flag } from '@drwyn/react/plugins'
+
+<ActionProvider plugins={[flag]} services={{ flagSource: growthbook }}>
+  <Action flag="new-checkout">
+    <NewCheckout />
+  </Action>
+</ActionProvider>
+```
+
+If `flagSource.isOn('new-checkout')` returns `true`, the `NewCheckout` renders. If `false`, nothing renders.
+
+### Object form — fallback when off
+
+```tsx
+<Action flag={{ key: 'new-checkout', fallback: <OldCheckout /> }}>
+  <NewCheckout />
+</Action>
+```
+
+Same gate, but renders the fallback instead of nothing when the flag is off. The fallback can be any React node.
+
+## Config
+
+```ts
+type FlagConfig =
+  | string
+  | {
+      key: string
+      fallback?: ReactNode
+      defaultWhenUnknown?: boolean
+    }
+```
+
+| Field | Default | Meaning |
+|---|---|---|
+| `key` | required | The flag identifier to look up via `services.flagSource.isOn(key)` |
+| `fallback` | none → render `null` | What to render when the flag is off |
+| `defaultWhenUnknown` | `true` (fail-open) | What to return when `isOn(key)` returns `undefined` (flag not loaded yet) |
+
+## The `flagSource` interface
+
+You wire up your flag client via the provider:
+
+```ts
+interface FlagSource {
+  isOn: (key: string) => boolean | undefined
+}
+```
+
+`undefined` means "I don't know yet" (e.g. async flag client still loading). The plugin treats it as `defaultWhenUnknown` — `true` by default (render the content). Override per-instance:
+
+```tsx
+<Action flag={{ key: 'new-checkout', defaultWhenUnknown: false }}>
+  <NewCheckout />
+</Action>
+```
+
+### Why fail-open by default
+
+If the flag source breaks (network error, undefined `isOn`, async value not yet loaded), the worst outcome is content briefly showing when it shouldn't — recoverable. Fail-closed would hide the entire app's UI on a missing flag source — much worse.
+
+If your use case needs fail-closed (paywall safety, compliance), set `defaultWhenUnknown: false` per-instance or wrap your own gate logic in a custom plugin.
+
+## You've seen this in
+
+- [LaunchDarkly](https://launchdarkly.com/) — wire `flagSource: { isOn: (k) => ldClient.variation(k, false) }`
+- [GrowthBook](https://www.growthbook.io/) — `flagSource: { isOn: (k) => growthbook.isOn(k) }`
+- [Unleash](https://www.getunleash.io/) — `flagSource: { isOn: (k) => unleash.isEnabled(k) }`
+- A static map for tests: `flagSource: { isOn: (k) => MY_FLAGS[k] }`
+
+Any object satisfying the one-method interface works.
+
+## Switch tools = one-line change
+
+```diff
+- flagSource: { isOn: (k) => growthbook.isOn(k) }
++ flagSource: { isOn: (k) => ldClient.variation(k, false) }
+```
+
+Every `Action` with `flag` set keeps working unchanged.

@@ -1,0 +1,120 @@
+---
+title: definePlugin
+description: The helper for authoring typed plugins.
+---
+
+# `definePlugin`
+
+`definePlugin` is the helper for authoring a plugin with full TypeScript inference. At runtime it's almost a no-op — it strips the `config` field and returns the rest. At compile time it captures three generics (`Config`, `Name`, `PropKey`) that flow into the registry and through to the `Action` component's prop typing.
+
+## Signature
+
+```ts
+function definePlugin<
+  Config,
+  Name extends string,
+  PropKey extends string,
+>(spec: {
+  name: Name
+  propKey: PropKey
+  config?: Config                                   // type carrier (discarded at runtime)
+  gate?:       (cfg: Config, ctx: PluginContext) => GateResult
+  mount?:      (cfg: Config, ctx: PluginContext) => void | (() => void)
+  events?:     Partial<Record<DOMEventName, (e: SyntheticEvent, cfg: Config, ctx: PluginContext) => void>>
+  visibility?: {
+    onVisible?: (cfg: Config, ctx: PluginContext) => void
+    onHidden?:  (cfg: Config, ctx: PluginContext) => void
+    threshold?: 0 | 0.25 | 0.5 | 1
+  }
+}): Plugin<Config, Name, PropKey>
+```
+
+## The four phase slots
+
+A plugin can implement any subset. Each phase serves one purpose:
+
+| Phase | Returns | Used for |
+|---|---|---|
+| `gate` | a `GateResult` (pass / block / replace) | Render-time gating (flags, auth, paywalls, A/B variants) |
+| `mount` | `void` or a cleanup function | Mount/unmount side effects |
+| `events` | one handler per DOM event name | Click/focus/submit tracking |
+| `visibility` | `onVisible` / `onHidden` callbacks | Impression tracking, lazy loading |
+
+You're free to mix — a plugin can gate AND track events, for example.
+
+## The config field
+
+The `config` field in the spec is **TypeScript-only**. You typically write it as an empty object literal cast to a config type. It's a carrier so TypeScript can infer the `Config` generic. `definePlugin` strips it from the returned plugin object at runtime — your plugin doesn't carry a useless empty object.
+
+You can use any TypeScript expression that produces a value of the right shape:
+
+```ts
+config: {} as { color: 'gold' | 'silver'; duration?: number }
+config: {} as string
+config: {} as { event: string; props?: Record<string, unknown> }
+```
+
+Most plugins use object literals; some use string unions; a few use complex types.
+
+## PluginContext
+
+Every phase function receives `ctx: PluginContext`:
+
+```ts
+interface PluginContext {
+  instanceId: string                       // stable per-Action id
+  services: ActionServicesRegistry          // typed access to provider services
+}
+```
+
+`ctx.services` is your interface for talking to the outside world — analytics sinks, flag clients, custom services you define. **Always go through services** instead of importing third-party libraries directly in your plugin (see [authoring](/authoring)).
+
+## A full example
+
+The built-in `analytics` plugin in its entirety:
+
+```ts
+import { definePlugin } from '@drwyn/react/plugin'
+
+export type AnalyticsConfig = {
+  click?: string
+  focus?: string
+  blur?: string
+  change?: string
+  submit?: string
+  props?: Record<string, unknown>
+}
+
+export const analytics = definePlugin({
+  name: 'analytics',
+  propKey: 'track',
+  config: {} as AnalyticsConfig,
+  events: {
+    click:  (_e, cfg, ctx) => cfg.click  && ctx.services.sink({ name: cfg.click,  props: cfg.props }),
+    focus:  (_e, cfg, ctx) => cfg.focus  && ctx.services.sink({ name: cfg.focus,  props: cfg.props }),
+    blur:   (_e, cfg, ctx) => cfg.blur   && ctx.services.sink({ name: cfg.blur,   props: cfg.props }),
+    change: (_e, cfg, ctx) => cfg.change && ctx.services.sink({ name: cfg.change, props: cfg.props }),
+    submit: (_e, cfg, ctx) => cfg.submit && ctx.services.sink({ name: cfg.submit, props: cfg.props }),
+  },
+})
+
+declare module '@drwyn/react' {
+  interface ActionPluginRegistry {
+    analytics: typeof analytics
+  }
+}
+```
+
+Less than 30 lines for a fully-typed, registry-augmenting plugin. Use this as your starting template.
+
+## Why use the helper at all?
+
+Without `definePlugin`, you'd write:
+
+```ts
+export const myPlugin: Plugin = { ... }   // generics widen to defaults
+```
+
+…and the plugin's type becomes `Plugin<unknown, string, string>`. The registry augmentation would inherit those wide types, and the the `Action` component prop would have no autocomplete on the config shape.
+
+`definePlugin` narrows the generics to literal types so the registry — and downstream, the `Action` component's props — sees the precise shapes.
