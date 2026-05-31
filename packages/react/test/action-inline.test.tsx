@@ -1,8 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { forwardRef } from 'react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Action } from '../src/action'
 import { definePlugin } from '../src/plugin/define'
+import { __resetDevWarnCacheForTests } from '../src/plugin/dev-warn'
 import { ActionProvider } from '../src/provider'
 
 declare module '../src/types' {
@@ -78,5 +79,41 @@ describe('<Action mode="inline">', () => {
 
     render(<Wrap />)
     expect(childRef.current).toBe(screen.getByTestId('ref-child'))
+  })
+})
+
+describe('<Action mode="inline"> constraint warnings', () => {
+  let warn: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    __resetDevWarnCacheForTests()
+  })
+
+  afterEach(() => {
+    warn.mockRestore()
+  })
+
+  it('warns and falls back when there are multiple element children', () => {
+    render(
+      <ActionProvider plugins={[]}>
+        <Action mode="inline">
+          <span>a</span>
+          <span>b</span>
+        </Action>
+      </ActionProvider>,
+    )
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringMatching(/inline.*exactly one valid React element/i),
+    )
+  })
+
+  it('warns and falls back when the child is a string', () => {
+    render(
+      <ActionProvider plugins={[]}>
+        <Action mode="inline">hello</Action>
+      </ActionProvider>,
+    )
+    expect(warn).toHaveBeenCalled()
   })
 })
