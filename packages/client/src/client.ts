@@ -1,4 +1,4 @@
-import type { DrwynClientOptions, EventInput } from './types'
+import type { DrwynClientOptions, EventInput, MemoryValue } from './types'
 
 const DEFAULT_CLOUD_URL = 'https://api.drwyn.dev'
 
@@ -18,6 +18,37 @@ export class DrwynClient {
       props: input.props,
       timestamp_ms: input.timestamp,
     })
+  }
+
+  async getMemory(
+    userId: string,
+    key: string,
+    options?: { namespace?: string },
+  ): Promise<MemoryValue | null> {
+    const params = new URLSearchParams({ user_id: userId })
+    if (options?.namespace !== undefined) params.set('namespace', options.namespace)
+    const result = (await this.request(
+      'GET',
+      `/memory/${encodeURIComponent(key)}?${params.toString()}`,
+    )) as { value: MemoryValue | null }
+    return result.value
+  }
+
+  async setMemory(
+    userId: string,
+    key: string,
+    value: MemoryValue,
+    options?: { namespace?: string },
+  ): Promise<void> {
+    const body: Record<string, unknown> = {
+      user_id: userId,
+      key,
+      value,
+    }
+    if (options?.namespace !== undefined) {
+      body.namespace = options.namespace
+    }
+    await this.request('POST', '/memory', body)
   }
 
   private async request(
