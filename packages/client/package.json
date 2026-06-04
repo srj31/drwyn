@@ -1,0 +1,39 @@
+{
+  "name": "@drwyn/client",
+  "version": "0.0.0",
+  "description": "Client for drwyn cloud — sends events and reads/writes per-user memory.",
+  "license": "MIT",
+  "author": "drwyn contributors",
+  "homepage": "https://drwyn.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srj31/drwyn.git",
+    "directory": "packages/client"
+  },
+  "bugs": {
+    "url": "https://github.com/srj31/drwyn/issues"
+  },
+  "keywords": ["drwyn", "client", "analytics", "memory"],
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "happy-dom": "^15.11.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
