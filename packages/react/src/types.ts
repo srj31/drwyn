@@ -32,6 +32,7 @@ export interface ActionServicesRegistry {
 
 export interface PluginContext {
   instanceId: string
+  actionName?: string
   services: ActionServicesRegistry
 }
 

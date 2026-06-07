@@ -31,10 +31,11 @@ type RegistryToProps = {
 export type ActionProps = RegistryToProps & {
   mode?: 'inline' | 'region'
   as?: keyof JSX.IntrinsicElements
+  name?: string
   children: ReactNode | ((visibility: SurfaceVisibility) => ReactNode)
 }
 
-const RESERVED_PROPS = new Set(['mode', 'as', 'children'])
+const RESERVED_PROPS = new Set(['mode', 'as', 'children', 'name'])
 
 function extractConfigs(props: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {}
@@ -102,7 +103,7 @@ function getOnlyValidElementChild(children: ReactNode): ReactElement<any> | null
 }
 
 export function Action(props: ActionProps): ReactNode {
-  const { mode = 'region', as = 'div', children } = props
+  const { mode = 'region', as = 'div', name, children } = props
   const runtime = useActionRuntime()
   const instanceId = useId()
   const elementRef = useRef<HTMLElement | null>(null)
@@ -113,8 +114,12 @@ export function Action(props: ActionProps): ReactNode {
   )
 
   const ctx = useMemo(
-    () => ({ instanceId, services: runtime.services }),
-    [instanceId, runtime.services],
+    () => ({
+      instanceId,
+      ...(name !== undefined ? { actionName: name } : {}),
+      services: runtime.services,
+    }),
+    [instanceId, name, runtime.services],
   )
 
   const knownPropKeys = useMemo(
