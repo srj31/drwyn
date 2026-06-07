@@ -18,9 +18,9 @@ import {
 import { composeRefs } from './plugin/compose-ref'
 import { devWarn } from './plugin/dev-warn'
 import { type VisibilityThreshold, observe, unobserve } from './plugin/intersection'
-import { buildHandlers, runGate, runMount } from './plugin/runtime'
+import { buildHandlers, runGate, runMount, runRender } from './plugin/runtime'
 import { useActionRuntime } from './provider'
-import type { ActionPluginRegistry, DOMEventName, Plugin } from './types'
+import type { ActionPluginRegistry, DOMEventName, Plugin, SurfaceVisibility } from './types'
 
 type RegistryToProps = {
   [K in keyof ActionPluginRegistry as ActionPluginRegistry[K] extends Plugin<any, any, infer P>
@@ -129,6 +129,14 @@ export function Action(props: ActionProps): ReactNode {
   const renderTarget: ReactNode =
     gateResult.kind === 'block' ? null : gateResult.kind === 'replace' ? gateResult.node : children
 
+  const renderResult = useMemo(
+    () =>
+      gateResult.kind === 'block'
+        ? { visibility: 'full' as SurfaceVisibility }
+        : runRender(runtime.plugins, configs, ctx, runtime.onError),
+    [runtime.plugins, configs, ctx, gateResult.kind, runtime.onError],
+  )
+
   const handlers = useMemo(
     () =>
       gateResult.kind === 'block'
@@ -218,6 +226,7 @@ export function Action(props: ActionProps): ReactNode {
           domHandlers[propKey],
         )
       }
+      childProps['data-drwyn-visibility'] = renderResult.visibility
       // React 19: ref is a regular prop in element.props.
       // React 18 with forwardRef: ref was on element.ref (now deprecated in 19).
       // Reading props.ref works in 19 without warnings; React 18 users using
@@ -235,6 +244,7 @@ export function Action(props: ActionProps): ReactNode {
     {
       ref: elementRef,
       'data-drwyn-action': instanceId,
+      'data-drwyn-visibility': renderResult.visibility,
       ...domHandlers,
     },
     renderTarget,

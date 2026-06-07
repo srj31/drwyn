@@ -9,9 +9,15 @@ export type DOMEventName =
   | 'mouseenter'
   | 'mouseleave'
 
-export type PluginPhase = 'gate' | 'mount' | 'event' | 'visibility'
+export type PluginPhase = 'gate' | 'mount' | 'event' | 'visibility' | 'render'
 
 export type GateResult = { kind: 'pass' } | { kind: 'block' } | { kind: 'replace'; node: ReactNode }
+
+export type SurfaceVisibility = 'full' | 'collapsed' | 'hidden'
+
+export interface RenderResult {
+  visibility: SurfaceVisibility
+}
 
 export interface ActionServicesRegistry {
   sink: (event: { name: string; props?: Record<string, unknown> | undefined }) => void
@@ -46,6 +52,7 @@ export interface Plugin<
     onHidden?: (cfg: Config, ctx: PluginContext) => void
     threshold?: 0 | 0.25 | 0.5 | 1
   }
+  render?: (cfg: Config, ctx: PluginContext) => RenderResult
 }
 
 export interface ActionPluginRegistry {}

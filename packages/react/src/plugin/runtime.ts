@@ -1,5 +1,13 @@
 import type { SyntheticEvent } from 'react'
-import type { DOMEventName, GateResult, Plugin, PluginContext, PluginPhase } from '../types'
+import type {
+  DOMEventName,
+  GateResult,
+  Plugin,
+  PluginContext,
+  PluginPhase,
+  RenderResult,
+  SurfaceVisibility,
+} from '../types'
 
 export type OnError = (err: unknown, pluginName: string, phase: PluginPhase) => void
 
@@ -57,6 +65,28 @@ export function runMount(
       }
     }
   }
+}
+
+export function runRender(
+  plugins: ReadonlyArray<Plugin<any, string, string>>,
+  configs: Record<string, unknown>,
+  ctx: PluginContext,
+  onError?: OnError,
+): RenderResult {
+  // Strictest wins: hidden > collapsed > full
+  let strictest: SurfaceVisibility = 'full'
+  for (const plugin of plugins) {
+    if (!plugin.render) continue
+    if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+    try {
+      const result = plugin.render(configs[plugin.propKey], ctx)
+      if (result.visibility === 'hidden') return { visibility: 'hidden' }
+      if (result.visibility === 'collapsed') strictest = 'collapsed'
+    } catch (err) {
+      onError?.(err, plugin.name, 'render')
+    }
+  }
+  return { visibility: strictest }
 }
 
 type HandlerMap = Partial<Record<DOMEventName, (e: SyntheticEvent) => void>>
