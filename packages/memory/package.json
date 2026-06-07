@@ -42,8 +42,13 @@
   "devDependencies": {
     "@drwyn/react": "workspace:*",
     "@drwyn/client": "workspace:*",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "fake-indexeddb": "^6.0.0",
     "happy-dom": "^15.11.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
