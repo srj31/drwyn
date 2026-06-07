@@ -94,15 +94,7 @@ describe('<Action mode="inline"> + render-prop child multi-element', () => {
     warn.mockRestore()
   })
 
-  it('does not crash when the function returns a fragment of multiple elements', () => {
-    // KNOWN ISSUE: when the render-prop returns a Fragment containing multiple
-    // elements, `getOnlyValidElementChild` treats the Fragment as a single
-    // valid element and `cloneElement`s it with `data-drwyn-visibility`. React
-    // 19 emits an "Invalid prop ... supplied to React.Fragment" warning but
-    // does not crash; both spans still render. The inline-mode fallback-to-
-    // region path is NOT taken for this case (vs. the static multi-child case,
-    // where children come through as an array and the fallback fires). This
-    // test pins down current behavior; the bug is tracked separately.
+  it('falls back to region mode when the function returns a fragment of multiple elements', () => {
     const { container } = render(
       <ActionProvider plugins={[]}>
         <Action mode="inline">
@@ -115,6 +107,11 @@ describe('<Action mode="inline"> + render-prop child multi-element', () => {
         </Action>
       </ActionProvider>,
     )
+    // Both spans render inside the region wrapper now.
     expect(container.querySelectorAll('span').length).toBe(2)
+    // The wrapper carries the data-drwyn-action attribute (region mode signal).
+    expect(container.querySelector('[data-drwyn-action]')).not.toBeNull()
+    // The dev-warn about inline fallback fires.
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('inline'))
   })
 })

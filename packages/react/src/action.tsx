@@ -2,6 +2,7 @@
 
 import {
   Children,
+  Fragment,
   type JSX,
   type ReactElement,
   type ReactNode,
@@ -99,6 +100,7 @@ function getOnlyValidElementChild(children: ReactNode): ReactElement<any> | null
   if (arr.length !== 1) return null
   const first = arr[0]
   if (!isValidElement(first)) return null
+  if (first.type === Fragment) return null
   return first as ReactElement<any>
 }
 
