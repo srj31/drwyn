@@ -31,7 +31,7 @@ type RegistryToProps = {
 export type ActionProps = RegistryToProps & {
   mode?: 'inline' | 'region'
   as?: keyof JSX.IntrinsicElements
-  children: ReactNode
+  children: ReactNode | ((visibility: SurfaceVisibility) => ReactNode)
 }
 
 const RESERVED_PROPS = new Set(['mode', 'as', 'children'])
@@ -126,9 +126,6 @@ export function Action(props: ActionProps): ReactNode {
 
   const gateResult = runGate(runtime.plugins, configs, ctx, runtime.onError)
 
-  const renderTarget: ReactNode =
-    gateResult.kind === 'block' ? null : gateResult.kind === 'replace' ? gateResult.node : children
-
   const renderResult = useMemo(
     () =>
       gateResult.kind === 'block'
@@ -136,6 +133,18 @@ export function Action(props: ActionProps): ReactNode {
         : runRender(runtime.plugins, configs, ctx, runtime.onError),
     [runtime.plugins, configs, ctx, gateResult.kind, runtime.onError],
   )
+
+  const resolvedChildren: ReactNode =
+    typeof children === 'function'
+      ? (children as (v: SurfaceVisibility) => ReactNode)(renderResult.visibility)
+      : children
+
+  const renderTarget: ReactNode =
+    gateResult.kind === 'block'
+      ? null
+      : gateResult.kind === 'replace'
+        ? gateResult.node
+        : resolvedChildren
 
   const handlers = useMemo(
     () =>
