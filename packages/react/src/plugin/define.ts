@@ -17,4 +17,6 @@ export type {
   Plugin,
   PluginContext,
   PluginPhase,
+  RenderResult,
+  SurfaceVisibility,
 } from '../types'
