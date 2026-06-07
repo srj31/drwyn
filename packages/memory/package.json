@@ -1,0 +1,51 @@
+{
+  "name": "@drwyn/memory",
+  "version": "0.0.0",
+  "description": "Per-user adaptive memory for drwyn — IndexedDB-backed local memory + optional cloud sync.",
+  "license": "MIT",
+  "author": "drwyn contributors",
+  "homepage": "https://drwyn.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srj31/drwyn.git",
+    "directory": "packages/memory"
+  },
+  "bugs": {
+    "url": "https://github.com/srj31/drwyn/issues"
+  },
+  "keywords": ["drwyn", "memory", "indexeddb", "adaptive"],
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@drwyn/react": "workspace:*",
+    "@drwyn/client": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@drwyn/client": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@drwyn/react": "workspace:*",
+    "@drwyn/client": "workspace:*",
+    "fake-indexeddb": "^6.0.0",
+    "happy-dom": "^15.11.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
