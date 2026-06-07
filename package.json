@@ -2,7 +2,7 @@
   "name": "drwyn-workspace",
   "private": true,
   "version": "0.0.0",
-  "workspaces": ["packages/*"],
+  "workspaces": ["packages/*", "apps/*"],
   "scripts": {
     "test": "bun run --filter '*' test",
     "build": "bun run --filter @drwyn/react build && bun run --filter @drwyn/memory build && bun run --filter @drwyn/react build && bun run --filter @drwyn/client build",
