@@ -19,7 +19,7 @@ export function runGate(
 ): GateResult {
   for (const plugin of plugins) {
     if (!plugin.gate) continue
-    if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+    if (!plugin.always && !Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
     const cfg = configs[plugin.propKey]
     let result: GateResult
     try {
@@ -43,7 +43,7 @@ export function runMount(
 
   for (const plugin of plugins) {
     if (!plugin.mount) continue
-    if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+    if (!plugin.always && !Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
     try {
       const result = plugin.mount(configs[plugin.propKey], ctx)
       if (typeof result === 'function') {
@@ -77,7 +77,7 @@ export function runRender(
   let strictest: SurfaceVisibility = 'full'
   for (const plugin of plugins) {
     if (!plugin.render) continue
-    if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+    if (!plugin.always && !Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
     try {
       const result = plugin.render(configs[plugin.propKey], ctx)
       if (result.visibility === 'hidden') return { visibility: 'hidden' }
@@ -108,7 +108,7 @@ export function buildHandlers(
 
   for (const plugin of plugins) {
     if (!plugin.events) continue
-    if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+    if (!plugin.always && !Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
     const cfg = configs[plugin.propKey]
     for (const eventName of Object.keys(plugin.events) as DOMEventName[]) {
       const handler = plugin.events[eventName]

@@ -177,7 +177,7 @@ export function Action(props: ActionProps): ReactNode {
     const regs: Registration[] = []
     for (const plugin of runtime.plugins) {
       if (!plugin.visibility) continue
-      if (!Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
+      if (!plugin.always && !Object.prototype.hasOwnProperty.call(configs, plugin.propKey)) continue
       regs.push({
         threshold: (plugin.visibility.threshold ?? 0.5) as VisibilityThreshold,
         onVisible: plugin.visibility.onVisible as Registration['onVisible'],

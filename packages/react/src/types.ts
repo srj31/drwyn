@@ -43,6 +43,7 @@ export interface Plugin<
 > {
   name: Name
   propKey: PropKey
+  always?: boolean
   gate?: (cfg: Config, ctx: PluginContext) => GateResult
   mount?: (cfg: Config, ctx: PluginContext) => void | (() => void)
   events?: Partial<
