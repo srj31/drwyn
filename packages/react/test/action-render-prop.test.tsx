@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { Action } from '../src/action'
 import { definePlugin } from '../src/plugin/define'
 import { ActionProvider } from '../src/provider'
@@ -12,9 +12,25 @@ const collapsedPlugin = definePlugin({
   render: () => ({ visibility: 'collapsed' as SurfaceVisibility }),
 })
 
+const blockPlugin = definePlugin({
+  name: 'blocker',
+  propKey: 'blocker',
+  config: {} as Record<string, unknown>,
+  gate: () => ({ kind: 'block' as const }),
+})
+
+const replacePlugin = definePlugin({
+  name: 'replacer',
+  propKey: 'replacer',
+  config: {} as Record<string, unknown>,
+  gate: () => ({ kind: 'replace' as const, node: <span data-testid="replaced">replaced</span> }),
+})
+
 declare module '../src/types' {
   interface ActionPluginRegistry {
     collapser: typeof collapsedPlugin
+    blocker: typeof blockPlugin
+    replacer: typeof replacePlugin
   }
 }
 
@@ -46,5 +62,26 @@ describe('<Action> render-prop child', () => {
       </ActionProvider>,
     )
     expect(screen.getByTestId('static')).toBeInTheDocument()
+  })
+
+  it('does not invoke the function child when the gate blocks', () => {
+    const fn = vi.fn((v: SurfaceVisibility) => <span>{v}</span>)
+    render(
+      <ActionProvider plugins={[blockPlugin]}>
+        <Action blocker={{}}>{fn}</Action>
+      </ActionProvider>,
+    )
+    expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('does not invoke the function child when the gate replaces', () => {
+    const fn = vi.fn((v: SurfaceVisibility) => <span>{v}</span>)
+    render(
+      <ActionProvider plugins={[replacePlugin]}>
+        <Action replacer={{}}>{fn}</Action>
+      </ActionProvider>,
+    )
+    expect(fn).not.toHaveBeenCalled()
+    expect(screen.getByTestId('replaced')).toBeDefined()
   })
 })

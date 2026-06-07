@@ -134,17 +134,14 @@ export function Action(props: ActionProps): ReactNode {
     [runtime.plugins, configs, ctx, gateResult.kind, runtime.onError],
   )
 
-  const resolvedChildren: ReactNode =
-    typeof children === 'function'
-      ? (children as (v: SurfaceVisibility) => ReactNode)(renderResult.visibility)
-      : children
-
   const renderTarget: ReactNode =
     gateResult.kind === 'block'
       ? null
       : gateResult.kind === 'replace'
         ? gateResult.node
-        : resolvedChildren
+        : typeof children === 'function'
+          ? (children as (v: SurfaceVisibility) => ReactNode)(renderResult.visibility)
+          : children
 
   const handlers = useMemo(
     () =>
