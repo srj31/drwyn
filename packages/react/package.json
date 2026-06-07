@@ -45,6 +45,10 @@
     "./plugins": {
       "types": "./dist/plugins.d.ts",
       "import": "./dist/plugins.js"
+    },
+    "./memory": {
+      "types": "./dist/memory.d.ts",
+      "import": "./dist/memory.js"
     }
   },
   "publishConfig": {
@@ -58,9 +62,16 @@
   },
   "peerDependencies": {
     "react": ">=18",
-    "react-dom": ">=18"
+    "react-dom": ">=18",
+    "@drwyn/memory": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@drwyn/memory": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@drwyn/memory": "workspace:*",
     "@testing-library/jest-dom": "^6.6.0",
     "@testing-library/react": "^16.1.0",
     "@types/react": "^19.0.0",
