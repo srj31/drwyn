@@ -1,0 +1,222 @@
+---
+title: Use cases
+description: Concrete scenarios where drwyn earns its install — from one-prop click tracking to per-user adaptive UI.
+---
+
+# Use cases
+
+`<Action>` is the same primitive across every example below. What changes is the props you pass — different plugins layer different behaviors around the same wrapper.
+
+The first four use cases work with **just `@drwyn/react`** and any analytics / feature-flag service you already have. The last four use **`@drwyn/memory` + the `surface` plugin** for adaptive UI (per-user, automatic).
+
+If you only ever use the first set, drwyn replaces a stack of small tracking utilities. If you use the second set, it does something almost no other library does: per-user UI evolution without manual configuration per user.
+
+---
+
+## Base library — `@drwyn/react`
+
+### 1. One-prop click tracking on any element
+
+You want to track which buttons get clicked without sprinkling `onClick={() => analytics.track(...)}` everywhere. The `analytics` plugin reads a `track={{ click: 'event_name' }}` prop and forwards to whichever sink you wired (PostHog, Segment, Mixpanel, your own backend).
+
+```tsx
+<Action
+  mode="inline"
+  track={{ click: 'cta_clicked', props: { plan: 'pro' } }}
+>
+  <button type="button">Upgrade</button>
+</Action>
+```
+
+No new event spec, no separate `useTracking()` hook to import. The button stays a button.
+
+### 2. Feature-flag gating with one prop
+
+Hide a half-built feature behind a flag without scattering `if (flags.has('new-checkout'))` through your tree. The `flag` plugin reads the flag value from your `flagSource` service (GrowthBook, Statsig, LaunchDarkly, your own) and renders `null` when it's off.
+
+```tsx
+<Action flag="new-checkout">
+  <CheckoutV2 />
+</Action>
+```
+
+Toggle the flag, the subtree appears or vanishes. No re-deploy.
+
+### 3. Impression tracking when an element enters the viewport
+
+Fire an event the first (or every) time an element becomes visible. Built on a shared `IntersectionObserver` — one observer per page regardless of how many `<Action>`s use it.
+
+```tsx
+<Action
+  visibility={{ event: 'hero_viewed', once: true, threshold: 0.5 }}
+>
+  <Hero />
+</Action>
+```
+
+Drop this on every above-the-fold thing you want hit-rate data for. No manual observer setup.
+
+### 4. Run-once mount side effects
+
+Some setup should fire when a component mounts and unfire when it unmounts. The `mount` plugin makes this declarative — no `useEffect` boilerplate, no manual cleanup.
+
+```tsx
+<Action
+  mount={{
+    on: () => attachChatWidget(),
+    off: () => detachChatWidget(),
+  }}
+>
+  <CustomerSupportRegion />
+</Action>
+```
+
+Useful for floating widgets, listeners that span a subtree, anything you'd otherwise write as a `useEffect` with a cleanup function.
+
+---
+
+## Adaptive primitives — `@drwyn/memory` + `surface`
+
+These four require `@drwyn/memory`. They watch how each user uses your app and adapt per user.
+
+```bash
+bun add @drwyn/react@alpha @drwyn/memory@alpha
+```
+
+```tsx filename="app/providers.tsx"
+'use client'
+import { ActionProvider } from '@drwyn/react'
+import { memory, surface, createMemoryStore } from '@drwyn/memory'
+
+const memoryStore = createMemoryStore()
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ActionProvider plugins={[memory, surface]} services={{ memory: memoryStore }}>
+      {children}
+    </ActionProvider>
+  )
+}
+```
+
+### 5. The pricing CTA that promotes itself
+
+You shipped a Pro tier. Most free users will never click "Upgrade." The minority who *do* click it three times haven't converted yet — your CTA isn't loud enough.
+
+Without drwyn, you A/B test a bigger CTA. The treatment wins for the 3-clicks-but-never-converted users but degrades UX for the 90% who never click it at all. Net flat.
+
+With drwyn: the CTA stays subtle by default, but expands into a hero card *only for users who've shown interest*. No cohort definitions, no flag conditions.
+
+```tsx
+<Action
+  name="pricing-cta"
+  surface={{ defaultVisibility: 'collapsed', promoteAfter: 3 }}
+>
+  {(visibility) =>
+    visibility === 'full' ? <HeroPricingCard /> : <SmallPricingLink />
+  }
+</Action>
+```
+
+After three clicks (tracked automatically by the `memory` plugin), `surface` returns `'full'` on the next page navigation. Each user adapts on their own timeline.
+
+### 6. The dashboard that hides panels you ignore
+
+SaaS dashboards have a metastasis problem: every new feature gets a panel, the panel never goes away, and the result is a 14-tile grid no one scans. Users tune out the whole dashboard.
+
+With drwyn: each panel is a `<surface>`. Panels the user opens stay full size. Panels they never touch collapse to a one-line row. Their dashboard distills into the panels they actually care about — without a "customize layout" modal or a settings page.
+
+```tsx
+{PANELS.map((p) => (
+  <Action
+    key={p.id}
+    name={`panel-${p.id}`}
+    surface={{
+      defaultVisibility: 'full',
+      collapseUntil: 0,
+      promoteAfter: 3,
+    }}
+  >
+    {(v) =>
+      v === 'full' ? <PanelFullCard panel={p} /> : <PanelOneLineRow panel={p} />
+    }
+  </Action>
+))}
+```
+
+Each panel evolves independently per user. The new-user dashboard is the full grid; the power-user dashboard is the four panels they live in.
+
+### 7. Docs feedback that's actually contextual
+
+The standard "did this help?" widget on docs pages is universally ignored because it's the *same widget on every page*. Users tune it out. Worse: most docs sites just ask people to "join our Discord" or "file a GitHub issue" — most never will.
+
+With drwyn: the feedback widget only renders on pages a user has read past a threshold (i.e., engaged with). The signal you collect is real engagement, not random. On three thumbs-downs in a session, a contextual chat opens with the pages the user was reading already populated. No more "join our Discord and explain what you wanted."
+
+```tsx
+<Action
+  name={`doc-${slug}`}
+  surface={{ defaultVisibility: 'collapsed', promoteAfter: 1 }}
+>
+  {(v) => (
+    <DocPage slug={slug}>
+      {v === 'full' && <FeedbackWidget slug={slug} />}
+    </DocPage>
+  )}
+</Action>
+```
+
+Combine with the [`visibility`](./plugins/visibility) plugin for an extra constraint — only count as a "use" when the user spent more than N seconds with the page in view.
+
+### 8. The settings tour that hides itself
+
+Every app has a "what's new" tooltip that nags users forever. The user dismisses it three times and it still comes back because nobody coded the "don't show this again" persistence.
+
+With drwyn: the tooltip is a `<surface hideAfter={3}>`. After three dismissals, the `surface` plugin marks it hidden for that user. Forever. On every device, once cloud sync is on. No "don't show this again" checkbox, no preferences page — just behavior.
+
+```tsx
+<Action
+  name="tour-dismiss"
+  surface={{ defaultVisibility: 'full', hideAfter: 3 }}
+>
+  {(v) => (v === 'hidden' ? null : <TourFloater />)}
+</Action>
+```
+
+The dismiss button click is tracked automatically (it's inside the `<Action>`). On the third dismissal, the tooltip stops rendering.
+
+---
+
+## Mixing them
+
+Plugins compose. A single `<Action>` can be both adaptive AND tracked AND visibility-instrumented:
+
+```tsx
+<Action
+  name="pricing-cta"
+  surface={{ defaultVisibility: 'collapsed', promoteAfter: 5 }}
+  track={{ click: 'pricing_cta_clicked' }}
+  visibility={{ event: 'pricing_cta_viewed', once: true }}
+>
+  {(v) =>
+    v === 'full' ? <HeroPricingCard /> : <SmallPricingLink />
+  }
+</Action>
+```
+
+Same component, four plugins, four behaviors. The runtime fans them out in well-defined phases — see [Concepts: Plugin lifecycle](./concepts).
+
+## What's not in scope
+
+- **Server-side personalization** — `surface` always returns `defaultVisibility` on the server and on the first client paint, then adapts on the next route navigation. Zero hydration flash, but it means the first page a user sees is never personalized. Cookie-based pre-rendering is on the v1.x roadmap.
+- **Cohort-based gating** — drwyn adapts per-user. If you want "show this to all users on the Pro plan," the `flag` plugin is the right tool, not `surface`.
+- **A/B testing infrastructure** — drwyn doesn't do treatment vs control random assignment. It adapts based on the user's own behavior. Use a flag service for randomized cohorts.
+
+## Live demo
+
+The [`apps/example`](https://github.com/srj31/drwyn/tree/main/apps/example) directory in the repo is a Next.js fixture wiring up three of these use cases (pricing CTA, feature tour, nav list) end-to-end. Clone and run for the full loop.
+
+## Next
+
+- [Concepts](./concepts) — the plugin lifecycle, runtime model, render-prop child contract.
+- [Built-in plugins](./plugins) — full reference for analytics, flag, mount, visibility, memory, surface.
+- [Authoring plugins](./authoring) — write your own.

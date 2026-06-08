@@ -59,6 +59,17 @@ export default function PricingPage() {
 - **Render-time gating** — `flag` plugin decides what renders without flicker.
 - **Server-component friendly** — works in Next.js App Router (with `'use client'`).
 - **Tiny** — ~10 KB minified, ESM-only, zero runtime deps.
+- **Adaptive UI add-on** — pair with [`@drwyn/memory`](../memory) for per-user surface promotion / collapse / hide based on usage frequency.
+
+## Where you'd use it
+
+- **One-prop click tracking** on any button without `onClick` boilerplate (`track={{ click: 'cta_clicked' }}`).
+- **Feature-flag gating** without scattering `if (flags.has(...))` through your tree (`flag="my-flag"`).
+- **Impression tracking** when an element enters the viewport, on a shared IntersectionObserver (`visibility={{ event: 'viewed', once: true }}`).
+- **Declarative mount side effects** as an alternative to `useEffect` + manual cleanup (`mount={{ on, off }}`).
+- **Per-user adaptive UI** when paired with `@drwyn/memory` — pricing CTAs that promote themselves to interested users, dashboard panels that hide when ignored, settings tours that self-dismiss.
+
+[Full use-cases catalog →](../../apps/docs/content/use-cases.mdx)
 
 ## API at a glance
 

@@ -54,9 +54,25 @@ The same `<Action>` component lets you layer behaviors around any UI element:
 - **Analytics** — track clicks, focuses, submits with one prop.
 - **Feature flags** — gate render-time with `flag="my-flag"`.
 - **Impression tracking** — `visibility={{ event: 'viewed', once: true }}`.
+- **Adaptive UI** — `surface={{ promoteAfter: 5 }}` promotes a CTA only for users who've shown interest (via `@drwyn/memory`).
 - **Custom plugins** — `definePlugin` for anything else.
 
-Plugins are tiny objects with up to four lifecycle hooks: `gate`, `mount`, `events`, `visibility`. The runtime is React-agnostic and fully unit-tested.
+Plugins are tiny objects with up to five lifecycle hooks: `gate`, `mount`, `events`, `visibility`, `render`. The runtime is React-agnostic and fully unit-tested.
+
+## Where you'd use it
+
+Eight concrete scenarios spanning one-prop click tracking → per-user adaptive UI, in [`apps/docs/content/use-cases.mdx`](./apps/docs/content/use-cases.mdx). The short version:
+
+| Use case | Plugins | What you get |
+|---|---|---|
+| Click tracking on any element | `analytics` | One prop → events forwarded to your sink. |
+| Feature-flag gating | `flag` | One prop → subtree renders or returns `null`. |
+| Impression tracking | `visibility` | Shared IntersectionObserver, fires on viewport entry. |
+| Run-once mount side effects | `mount` | Declarative `useEffect` replacement. |
+| Pricing CTA that promotes itself | `memory` + `surface` | CTA expands only for users who've clicked it 3+ times. |
+| Dashboard panels that hide when ignored | `memory` + `surface` | Each user's dashboard distills to the panels they use. |
+| Contextual docs feedback | `memory` + `surface` + `visibility` | Feedback widget appears only on pages a user engaged with. |
+| Self-hiding settings tour | `memory` + `surface` | After N dismissals, the tooltip stops rendering. Forever. |
 
 ## License
 
