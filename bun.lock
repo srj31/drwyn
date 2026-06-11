@@ -29,7 +29,7 @@
     },
     "apps/example": {
       "name": "@drwyn/example",
-      "version": "0.0.0",
+      "version": "0.0.1-alpha.0",
       "dependencies": {
         "@drwyn/client": "workspace:*",
         "@drwyn/memory": "workspace:*",
@@ -54,7 +54,7 @@
     },
     "packages/client": {
       "name": "@drwyn/client",
-      "version": "0.0.0",
+      "version": "0.2.0-alpha.0",
       "devDependencies": {
         "happy-dom": "^15.11.0",
         "tsup": "^8.3.0",
@@ -64,7 +64,7 @@
     },
     "packages/memory": {
       "name": "@drwyn/memory",
-      "version": "0.0.0",
+      "version": "0.2.0-alpha.0",
       "devDependencies": {
         "@drwyn/client": "workspace:*",
         "@drwyn/react": "workspace:*",
@@ -89,7 +89,7 @@
     },
     "packages/react": {
       "name": "@drwyn/react",
-      "version": "0.1.0-alpha.0",
+      "version": "0.2.0-alpha.0",
       "devDependencies": {
         "@drwyn/memory": "workspace:*",
         "@testing-library/jest-dom": "^6.6.0",

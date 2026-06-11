@@ -1,10 +1,10 @@
 # @drwyn/react
 
-## 0.1.0-alpha.0
+## 0.2.0-alpha.0
 
 ### Minor Changes
 
-- 0c5f539: Initial alpha release (`0.1.0-alpha.0`). Published under the `alpha` npm tag — install with `bun add @drwyn/react@alpha`. API may change before v0.1 final.
+- 0c5f539: Initial alpha release (`0.2.0-alpha.0`). Published under the `alpha` npm tag — install with `bun add @drwyn/react@alpha`. API may change before v0.2 final.
 
   - `<ActionProvider>` for registering plugins and services at the app root.
   - `<Action>` wrapper component with `region` (default) and `inline` modes.
@@ -14,3 +14,8 @@
   - Shared IntersectionObserver pool, dev-only warnings, fail-open error isolation.
   - ESM-only build with preserved `'use client'` directive for Next.js App Router.
   - Three subpath exports: `@drwyn/react`, `@drwyn/react/plugin`, `@drwyn/react/plugins`.
+
+### Patch Changes
+
+- Updated dependencies [3677a9f]
+  - @drwyn/memory@0.2.0-alpha.0

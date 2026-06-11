@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/memory",
-  "version": "0.0.0",
+  "version": "0.2.0-alpha.0",
   "description": "Per-user adaptive memory for drwyn — IndexedDB-backed local memory + optional cloud sync.",
   "license": "MIT",
   "author": "drwyn contributors",
@@ -13,17 +13,28 @@
   "bugs": {
     "url": "https://github.com/srj31/drwyn/issues"
   },
-  "keywords": ["drwyn", "memory", "indexeddb", "adaptive"],
+  "keywords": [
+    "drwyn",
+    "memory",
+    "indexeddb",
+    "adaptive"
+  ],
   "type": "module",
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run --passWithNoTests",

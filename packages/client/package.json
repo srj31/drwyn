@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/client",
-  "version": "0.0.0",
+  "version": "0.2.0-alpha.0",
   "description": "Client for drwyn cloud — sends events and reads/writes per-user memory.",
   "license": "MIT",
   "author": "drwyn contributors",
@@ -13,17 +13,28 @@
   "bugs": {
     "url": "https://github.com/srj31/drwyn/issues"
   },
-  "keywords": ["drwyn", "client", "analytics", "memory"],
+  "keywords": [
+    "drwyn",
+    "client",
+    "analytics",
+    "memory"
+  ],
   "type": "module",
   "sideEffects": false,
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run --passWithNoTests",

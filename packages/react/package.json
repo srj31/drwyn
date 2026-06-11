@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/react",
-  "version": "0.1.0-alpha.0",
+  "version": "0.2.0-alpha.0",
   "description": "Wrap any React/Next.js subtree with plugin-driven gating, analytics, flags, and visibility.",
   "license": "MIT",
   "author": "drwyn contributors",
