@@ -7,9 +7,15 @@ description: Release history for @drwyn/react.
 
 All notable changes to `@drwyn/react`. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [semver](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0-alpha.0] — 2026-06-11
+## [0.2.0-alpha.1] — 2026-06-14
 
-> ⚠️ **Alpha release.** API may change before v0.1 final. Install with `bun add @drwyn/react@alpha`.
+### Fixed
+
+- Peer dependencies use real semver ranges (`^0.2.0-alpha.1`) instead of the workspace protocol (`workspace:*`), so `bun add @drwyn/react` works outside the monorepo. Same fix applied to `@drwyn/memory`.
+
+## [0.2.0-alpha.0] — 2026-06-11 (withdrawn)
+
+> ⚠️ **Alpha release.** API may change before v0.2 final. Install with `bun add @drwyn/react@alpha`. _Withdrawn — peers used the unresolved `workspace:*` protocol; use `0.2.0-alpha.1` or newer._
 
 ### Added
 

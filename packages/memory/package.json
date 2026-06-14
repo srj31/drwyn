@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/memory",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0-alpha.1",
   "description": "Per-user adaptive memory for drwyn — IndexedDB-backed local memory + optional cloud sync.",
   "license": "MIT",
   "author": "drwyn contributors",
@@ -42,8 +42,8 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@drwyn/react": "workspace:*",
-    "@drwyn/client": "workspace:*"
+    "@drwyn/react": "^0.2.0-alpha.1",
+    "@drwyn/client": "^0.2.0-alpha.1"
   },
   "peerDependenciesMeta": {
     "@drwyn/client": {

@@ -54,7 +54,7 @@
     },
     "packages/client": {
       "name": "@drwyn/client",
-      "version": "0.2.0-alpha.0",
+      "version": "0.2.0-alpha.1",
       "devDependencies": {
         "happy-dom": "^15.11.0",
         "tsup": "^8.3.0",
@@ -64,7 +64,7 @@
     },
     "packages/memory": {
       "name": "@drwyn/memory",
-      "version": "0.2.0-alpha.0",
+      "version": "0.2.0-alpha.1",
       "devDependencies": {
         "@drwyn/client": "workspace:*",
         "@drwyn/react": "workspace:*",
@@ -80,8 +80,8 @@
         "vitest": "^2.1.0",
       },
       "peerDependencies": {
-        "@drwyn/client": "workspace:*",
-        "@drwyn/react": "workspace:*",
+        "@drwyn/client": "^0.2.0-alpha.1",
+        "@drwyn/react": "^0.2.0-alpha.1",
       },
       "optionalPeers": [
         "@drwyn/client",
@@ -89,7 +89,7 @@
     },
     "packages/react": {
       "name": "@drwyn/react",
-      "version": "0.2.0-alpha.0",
+      "version": "0.2.0-alpha.1",
       "devDependencies": {
         "@drwyn/memory": "workspace:*",
         "@testing-library/jest-dom": "^6.6.0",
@@ -104,7 +104,7 @@
         "vitest": "^2.1.0",
       },
       "peerDependencies": {
-        "@drwyn/memory": "workspace:*",
+        "@drwyn/memory": "^0.2.0-alpha.1",
         "react": ">=18",
         "react-dom": ">=18",
       },

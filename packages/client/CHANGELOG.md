@@ -1,5 +1,11 @@
 # @drwyn/client
 
+## 0.2.0-alpha.1
+
+### Patch Changes
+
+- Republished alongside `@drwyn/{react,memory}@0.2.0-alpha.1` for version alignment. No source changes.
+
 ## 0.2.0-alpha.0
 
 ### Minor Changes

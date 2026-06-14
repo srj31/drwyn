@@ -1,5 +1,13 @@
 # @drwyn/react
 
+## 0.2.0-alpha.1
+
+### Patch Changes
+
+- Peer dependency `@drwyn/memory` now uses `^0.2.0-alpha.1` instead of the unresolved `workspace:*` protocol, so the package installs cleanly outside the monorepo.
+- Updated dependencies
+  - @drwyn/memory@0.2.0-alpha.1
+
 ## 0.2.0-alpha.0
 
 ### Minor Changes

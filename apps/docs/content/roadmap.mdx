@@ -33,4 +33,5 @@ Tracking what's planned, in progress, and recently shipped for the drwyn ecosyst
 
 ## Recently shipped
 
-- **v0.2.0-alpha.0** (2026-06-11) — Initial alpha release. `ActionProvider` + `Action`, four built-in plugins, plugin runtime, TypeScript registry augmentation, ESM build. `@drwyn/memory` (IndexedDB store + `memory`/`surface` plugins) and `@drwyn/client` (cloud SDK) ship alongside. Published under the `alpha` npm tag.
+- **v0.2.0-alpha.1** (2026-06-14) — Republish with peer dependency ranges (`workspace:*` → `^0.2.0-alpha.1`) so `@drwyn/{react,memory}` install cleanly outside the monorepo.
+- **v0.2.0-alpha.0** (2026-06-11) — Initial alpha release. `ActionProvider` + `Action`, four built-in plugins, plugin runtime, TypeScript registry augmentation, ESM build. `@drwyn/memory` (IndexedDB store + `memory`/`surface` plugins) and `@drwyn/client` (cloud SDK) ship alongside. Published under the `alpha` npm tag. _Withdrawn: peers used the unresolved `workspace:*` protocol._

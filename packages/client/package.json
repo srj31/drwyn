@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/client",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0-alpha.1",
   "description": "Client for drwyn cloud — sends events and reads/writes per-user memory.",
   "license": "MIT",
   "author": "drwyn contributors",
