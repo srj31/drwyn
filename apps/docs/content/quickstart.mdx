@@ -9,7 +9,7 @@ From zero to a wrapped component in five minutes.
 
 ## 1. Install
 
-> ⚠️ Alpha release — install from the `alpha` npm tag.
+> ⚠️ Alpha release. Current alpha: `0.2.0-alpha.1` — install with the `@alpha` tag.
 
 ```bash
 bun add @drwyn/react@alpha
@@ -110,8 +110,73 @@ const growthbook = new GrowthBook({ /* … */ })
 
 That's the *only* place in your codebase that knows about PostHog or GrowthBook. Switch tools by changing two lines.
 
+## 5. Add per-user adaptive UI (optional)
+
+`@drwyn/memory` records which `<Action>`s each user clicks, and the `surface` plugin reads those counts at render time to decide whether to show, collapse, or hide an element — without a flicker.
+
+```bash
+bun add @drwyn/memory@alpha
+```
+
+Wire it into your provider:
+
+```tsx filename="app/providers.tsx" {2,3,5,11,12}
+'use client'
+
+import { ActionProvider } from '@drwyn/react'
+import { analytics, flag, mount, visibility } from '@drwyn/react/plugins'
+import { memory, surface, createMemoryStore } from '@drwyn/memory'
+
+const memoryStore = createMemoryStore()
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ActionProvider
+      plugins={[analytics, flag, mount, visibility, memory, surface]}
+      services={{ sink, flagSource, memory: memoryStore }}
+    >
+      {children}
+    </ActionProvider>
+  )
+}
+```
+
+Now any `<Action>` can opt into self-promotion based on use:
+
+```tsx
+<Action
+  name="pricing-cta"
+  surface={{ defaultVisibility: 'collapsed', promoteAfter: 5 }}
+>
+  {(visibility) =>
+    visibility === 'full' ? <HeroPricingCard /> : <SmallPricingLink />
+  }
+</Action>
+```
+
+The CTA stays subtle by default. After five clicks (auto-recorded by the `memory` plugin), `surface` returns `'full'` on the next route navigation — for **that user only**. See [use cases](/use-cases) for the full catalog.
+
+## 6. Sync memory to a backend (optional)
+
+By default `@drwyn/memory` is local-only (IndexedDB). To sync per-user memory across devices, pair it with `@drwyn/client` and a drwyn cloud backend:
+
+```bash
+bun add @drwyn/client@alpha
+```
+
+```tsx
+import { DrwynClient } from '@drwyn/client'
+import { createMemoryStore } from '@drwyn/memory'
+
+const drwyn = new DrwynClient({ projectKey: 'pk_...' })
+const memoryStore = createMemoryStore({ cloud: drwyn })
+```
+
+Local reads stay synchronous; writes debounce-batch to the cloud every 5 seconds. Without `cloud`, everything works the same — just no cross-device sync.
+
 ## Next
 
+- [Use cases](/use-cases) — eight scenarios, base library + adaptive.
 - [Concepts](/concepts/provider-and-action) — how `ActionProvider` and `Action` fit together.
 - [Built-in plugins](/plugins) — `analytics`, `flag`, `mount`, `visibility` in depth.
 - [Inline mode](/concepts/inline-mode) — when to use `mode="inline"` vs the default region mode.

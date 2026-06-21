@@ -14,10 +14,20 @@ Four plugins ship in `@drwyn/react/plugins`. Each is small (~25–50 lines of so
 | [`mount`](/plugins/mount) | `mount` | mount | Mount/unmount events (event form or callback form) |
 | [`visibility`](/plugins/visibility) | `visibility` | visibility | Impression tracking with `once` + `threshold` |
 
+Two more ship in the optional [`@drwyn/memory`](https://www.npmjs.com/package/@drwyn/memory) package for per-user adaptive UI:
+
+| Plugin | `propKey` | Phase | What it does |
+|---|---|---|---|
+| `memory` | _none_ | events | Auto-records every `<Action name="...">` click into per-user IndexedDB |
+| `surface` | `surface` | render | Render-prop child receives `'full' \| 'collapsed' \| 'hidden'` based on use-count thresholds |
+
+See [Quick start §5](/quickstart#5-add-per-user-adaptive-ui-optional) for wiring.
+
 Import what you need:
 
 ```ts
 import { analytics, flag, mount, visibility } from '@drwyn/react/plugins'
+import { memory, surface } from '@drwyn/memory'  // optional, separate package
 ```
 
 Register on your provider:
