@@ -27,7 +27,7 @@ uv run python scripts/seed_example_project.py
 
 # 4. Start the backend
 uv run uvicorn drwyn_cloud.main:app --reload
-# → http://127.0.0.1:8000
+# → http://127.0.0.1:18000
 
 # 5. In another terminal, install + boot the example app
 cd ../..
@@ -36,10 +36,10 @@ bun install
 cd apps/example
 cp .env.example .env.local
 bun dev
-# → http://localhost:3000
+# → http://localhost:13000
 ```
 
-Visit `localhost:3000`. Click the pricing CTA five times, then click `/debug`
+Visit `localhost:13000`. Click the pricing CTA five times, then click `/debug`
 in the header — when you come back, the pill has expanded into a hero card.
 The feature-tour dismiss button hides itself after three clicks. The nav chips
 adapt per-item based on which you use.
@@ -89,11 +89,11 @@ adapt per-item based on which you use.
 `.env.local` (gitignored):
 
 ```
-NEXT_PUBLIC_DRWYN_API_URL=http://localhost:8000
+NEXT_PUBLIC_DRWYN_API_URL=http://localhost:18000
 NEXT_PUBLIC_DRWYN_PROJECT_KEY=pk_example_demo
 ```
 
-`NEXT_PUBLIC_DRWYN_API_URL` falls back to `http://localhost:8000` if unset.
+`NEXT_PUBLIC_DRWYN_API_URL` falls back to `http://localhost:18000` if unset.
 `NEXT_PUBLIC_DRWYN_PROJECT_KEY` must match a row in `projects.public_key`;
 the seed script inserts `pk_example_demo`.
 

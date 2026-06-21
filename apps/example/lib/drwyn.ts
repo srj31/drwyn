@@ -2,7 +2,7 @@ import { DrwynClient } from '@drwyn/client'
 import { type MemoryStore, createMemoryStore } from '@drwyn/memory'
 import { type SnapshotStore, createSnapshotStore } from '@drwyn/store'
 
-const DEFAULT_API_URL = 'http://localhost:8000'
+const DEFAULT_API_URL = 'http://localhost:18000'
 
 interface DrwynGlobals {
   __drwynClient?: DrwynClient
