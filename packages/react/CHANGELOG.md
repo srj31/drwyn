@@ -1,5 +1,13 @@
 # @drwyn/react
 
+## 0.3.0
+
+### Minor Changes
+
+- First stable (non-alpha) release; version aligned to `0.3.0` across all `@drwyn/*` packages.
+- `analytics` plugin now enriches `track` click/submit events with the current snapshot recorded by `@drwyn/store`'s `capture` plugin (read via an optional `snapshots` service). It is a no-op when no `snapshots` service is registered, so existing behavior is unchanged.
+- Built-in plugin propKeys (`track`, `flag`, `mount`, `visibility`) are now registered directly on the base `ActionPluginRegistry`, so external consumers get `<Action>` prop typing without a manual `declare module` augmentation. (Previously the relative-path augmentation did not survive the `.d.ts` bundle for consumers.)
+
 ## 0.2.0-alpha.1
 
 ### Patch Changes

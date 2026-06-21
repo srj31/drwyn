@@ -1,6 +1,6 @@
 {
   "name": "@drwyn/react",
-  "version": "0.2.0-alpha.1",
+  "version": "0.3.0",
   "description": "Wrap any React/Next.js subtree with plugin-driven gating, analytics, flags, and visibility.",
   "license": "MIT",
   "author": "drwyn contributors",
@@ -63,7 +63,7 @@
   "peerDependencies": {
     "react": ">=18",
     "react-dom": ">=18",
-    "@drwyn/memory": "^0.2.0-alpha.1"
+    "@drwyn/memory": "^0.3.0"
   },
   "peerDependenciesMeta": {
     "@drwyn/memory": {

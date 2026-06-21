@@ -1,5 +1,11 @@
 # @drwyn/memory
 
+## 0.3.0
+
+### Minor Changes
+
+- First stable (non-alpha) release; version aligned to `0.3.0`. Peer dependencies on `@drwyn/react` and `@drwyn/client` now require `^0.3.0`. No source changes.
+
 ## 0.2.0-alpha.1
 
 ### Patch Changes
