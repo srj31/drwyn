@@ -73,6 +73,26 @@ Some setup should fire when a component mounts and unfire when it unmounts. The 
 
 Useful for floating widgets, listeners that span a subtree, anything you'd otherwise write as a `useEffect` with a cleanup function.
 
+### 5. Context-rich analytics with zero prop plumbing
+
+Every `track` event should know the route, the cart total, and the form state *at click time* — but threading that context through every `<Action>` by hand is the boilerplate you wanted to avoid. With `@drwyn/store`, the `capture` plugin records a point-in-time snapshot on each click/submit and `analytics` merges it into the event. Register central getters once; the rest is automatic.
+
+```tsx
+import { capture, createSnapshotStore } from '@drwyn/store'
+
+const snapshots = createSnapshotStore({
+  capture: { route: () => location.pathname, cartTotal: () => store.getTotal() },
+})
+
+// <ActionProvider plugins={[capture, analytics]} services={{ snapshots, sink }}>
+
+<Action mode="inline" track={{ click: 'checkout_clicked' }}>
+  <button type="button">Checkout</button>
+</Action>
+```
+
+The `checkout_clicked` event carries `route` and `cartTotal` without a single extra prop. Add per-call context with [`useDrwynCapture`](./plugins/capture) or an `<Action>`-level `capture` prop when one element needs more.
+
 ---
 
 ## Adaptive primitives — `@drwyn/memory` + `surface`
@@ -80,7 +100,7 @@ Useful for floating widgets, listeners that span a subtree, anything you'd other
 These four require `@drwyn/memory`. They watch how each user uses your app and adapt per user.
 
 ```bash
-bun add @drwyn/react@alpha @drwyn/memory@alpha
+bun add @drwyn/react @drwyn/memory
 ```
 
 ```tsx filename="app/providers.tsx"

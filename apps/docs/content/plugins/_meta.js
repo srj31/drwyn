@@ -4,4 +4,5 @@ export default {
   flag: 'flag',
   mount: 'mount',
   visibility: 'visibility',
+  capture: 'capture',
 }

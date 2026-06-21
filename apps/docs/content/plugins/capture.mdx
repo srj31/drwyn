@@ -1,0 +1,104 @@
+---
+title: capture plugin
+description: Snapshot the values that existed when an action fired — queryable + track-event enrichment.
+---
+
+# `capture`
+
+Records a **point-in-time snapshot of surrounding values** every time an `<Action>` is clicked or submitted. Ships in the optional [`@drwyn/store`](https://www.npmjs.com/package/@drwyn/store) package alongside a queryable store and two hooks.
+
+```bash
+bun add @drwyn/react @drwyn/store
+```
+
+Use it to answer: _"what did the world look like when this was clicked?"_ — the route, the cart total, the active experiment, the form state. The snapshot is both **queryable** and **merged into your `track` event**, so your analytics pipeline gets the context for free.
+
+## Usage
+
+Register `capture` **before** `analytics` — handlers run in `plugins=[...]` order, so the snapshot must be recorded before analytics enriches its event.
+
+```tsx filename="app/providers.tsx"
+'use client'
+import { ActionProvider } from '@drwyn/react'
+import { analytics } from '@drwyn/react/plugins'
+import { capture, createSnapshotStore } from '@drwyn/store'
+
+const snapshots = createSnapshotStore({
+  capture: { route: () => location.pathname }, // ambient getters, read on every action
+})
+
+export function Providers({ children }) {
+  return (
+    <ActionProvider
+      plugins={[capture, analytics]}
+      services={{ snapshots, sink: (e) => posthog.capture(e.name, e.props) }}
+    >
+      {children}
+    </ActionProvider>
+  )
+}
+```
+
+Now **every** `<Action name="…" track={…}>` is enriched automatically — no per-site edits.
+
+## How a snapshot is built
+
+Three sources merge into one object, **most specific wins**:
+
+| Source | Where | Scope |
+|---|---|---|
+| Central getters | `createSnapshotStore({ capture })` | Ambient — read on every action |
+| `useDrwynCapture(key, value)` | Inside components | Whatever is mounted right now |
+| `capture` prop | On one `<Action>` | That action only |
+
+```tsx
+import { Action } from '@drwyn/react'
+import { useDrwynCapture, useDrwynSnapshot } from '@drwyn/store'
+
+function AddToCart() {
+  const [qty, setQty] = useState(1)
+  useDrwynCapture('qty', () => qty) // contributes while mounted
+
+  const last = useDrwynSnapshot('add-to-cart') // reactive read
+
+  return (
+    <Action name="add-to-cart" track={{ click: 'add_to_cart' }} capture={() => ({ sku: 'TSHIRT-01' })}>
+      <button>Add {qty} to cart</button>
+    </Action>
+  )
+}
+```
+
+A click here emits `add_to_cart` with props `{ route, qty, sku }` **and** stores the same snapshot, readable via `useDrwynSnapshot('add-to-cart')` or `snapshots.last('add-to-cart')`.
+
+## API
+
+### `createSnapshotStore(options?)`
+
+```ts
+createSnapshotStore(options?: {
+  capture?: Record<string, () => unknown>  // ambient getters, read on every action
+  maxPerAction?: number                    // ring-buffer cap per action name (default 25)
+}): SnapshotStore
+
+interface SnapshotStore {
+  last(actionName: string): Snapshot | undefined
+  history(actionName: string): readonly Snapshot[]
+  // record / peek / subscribe / registerContributor are used internally by the
+  // plugin and hooks.
+}
+```
+
+### `useDrwynCapture(key, value)`
+
+Contribute a value to every snapshot while the component is mounted. `value` may be a raw value or a getter — either way the **latest** value is read at action time, so there's no need to re-register when state changes.
+
+### `useDrwynSnapshot(actionName)`
+
+Reactively read the most recent snapshot for an action. Re-renders when a new snapshot for that action is recorded. Backed by `useSyncExternalStore`, so it's SSR-safe (empty server snapshot).
+
+## Notes
+
+- **In-memory only.** Snapshots live for the session (ring buffer). No IndexedDB, no separate cloud sync — the snapshot rides along in the `track` event to wherever your `sink` sends it.
+- **Point-in-time.** Snapshots are cloned via `structuredClone`, so later mutation of the source doesn't change a stored snapshot. Non-serializable values are dropped with a dev warning.
+- **Click & submit only.** `capture` records (and `analytics` enriches) on `click`/`submit` — the "action taken" events. `focus`/`blur`/`change` are not enriched, to avoid attaching a stale snapshot.

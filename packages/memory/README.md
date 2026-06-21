@@ -3,7 +3,7 @@
 Per-user adaptive memory + the first adaptive primitive (`surface`) for [`@drwyn/react`](../react). IndexedDB-backed local memory, optional cloud sync via [`@drwyn/client`](../client).
 
 ```bash
-bun add @drwyn/react@alpha @drwyn/memory@alpha
+bun add @drwyn/react @drwyn/memory
 ```
 
 ## What's in the box

@@ -126,8 +126,60 @@ import type {
 | `MountConfig` | type | inline in [mount](/plugins/mount) |
 | `VisibilityConfig` | type | inline in [visibility](/plugins/visibility) |
 
+## `@drwyn/store`
+
+Capture the values that existed when a drwyn action fired. See [Capture plugin](/plugins/capture) for the narrative.
+
+```ts
+import { createSnapshotStore, capture, useDrwynCapture, useDrwynSnapshot } from '@drwyn/store'
+import type { SnapshotStore, Snapshot } from '@drwyn/store'
+```
+
+### `createSnapshotStore`
+
+Creates the snapshot store you wire as the `snapshots` service.
+
+```ts
+createSnapshotStore(options?: {
+  capture?: Record<string, () => unknown>
+  maxPerAction?: number
+}): SnapshotStore
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `capture` | `{}` | Central getters, read at snapshot time and merged first (least specific). |
+| `maxPerAction` | `25` | Ring-buffer size per action name. |
+
+### `SnapshotStore`
+
+Read methods for consumers. (`record`/`peek`/`subscribe`/`registerContributor` are internal, used by the plugin and hooks.)
+
+```ts
+store.last(actionName: string): Snapshot | undefined        // most recent snapshot
+store.history(actionName: string): readonly Snapshot[]      // ring buffer, oldest → newest
+```
+
+A snapshot merges, most specific wins: central `capture` getters < `useDrwynCapture` contributors < per-`<Action>` `capture` prop. Values are cloned point-in-time via `structuredClone`.
+
+### `capture` plugin
+
+Always-on plugin (propKey `capture`) that records a snapshot on click/submit. Register **before** `analytics` so the snapshot is merged into the `track` event.
+
+```ts
+import { capture } from '@drwyn/store'
+// <ActionProvider plugins={[capture, analytics]} services={{ snapshots: store }}>
+```
+
+### Hooks
+
+```ts
+useDrwynCapture(key: string, value: T | (() => T)): void   // register a contributor
+useDrwynSnapshot(actionName: string): Snapshot | undefined // read the last snapshot reactively
+```
+
 ## Versioning
 
 `@drwyn/react` follows [semver](https://semver.org). Breaking changes to the plugin interface bump the core major.
 
-Current: **v0.2.0-alpha.1** (alpha). API may change before v0.2 final. Published under the `alpha` npm tag.
+Current: **v0.3.0** (stable). First stable release.

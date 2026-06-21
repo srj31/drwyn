@@ -2,12 +2,12 @@
 
 Plugin-driven wrapper component for React and Next.js. Compose analytics, feature flags, mount/visibility events, and custom actions onto any subtree.
 
-> ⚠️ **Alpha release** (`0.2.0-alpha.1`). API may change before v0.2 final. Install from the `alpha` npm tag.
+> `@drwyn/react` `0.3.0` — the first stable release.
 
 ```bash
-bun add @drwyn/react@alpha
-# or: npm install @drwyn/react@alpha
-# or: pnpm add @drwyn/react@alpha
+bun add @drwyn/react
+# or: npm install @drwyn/react
+# or: pnpm add @drwyn/react
 ```
 
 ## Quick start

@@ -21,6 +21,12 @@ Two more ship in the optional [`@drwyn/memory`](https://www.npmjs.com/package/@d
 | `memory` | _none_ | events | Auto-records every `<Action name="...">` click into per-user IndexedDB |
 | `surface` | `surface` | render | Render-prop child receives `'full' \| 'collapsed' \| 'hidden'` based on use-count thresholds |
 
+And one ships in the optional [`@drwyn/store`](https://www.npmjs.com/package/@drwyn/store) package for action-time context capture:
+
+| Plugin | `propKey` | Phase | What it does |
+|---|---|---|---|
+| [`capture`](/plugins/capture) | `capture` | events | Snapshots surrounding values on click/submit — queryable + merged into the `track` event |
+
 See [Quick start §5](/quickstart#5-add-per-user-adaptive-ui-optional) for wiring.
 
 Import what you need:
@@ -28,6 +34,7 @@ Import what you need:
 ```ts
 import { analytics, flag, mount, visibility } from '@drwyn/react/plugins'
 import { memory, surface } from '@drwyn/memory'  // optional, separate package
+import { capture } from '@drwyn/store'           // optional, separate package
 ```
 
 Register on your provider:

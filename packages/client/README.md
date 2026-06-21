@@ -3,7 +3,7 @@
 Client for drwyn cloud — sends events and reads/writes per-user memory.
 
 ```bash
-bun add @drwyn/client@alpha
+bun add @drwyn/client
 ```
 
 ## Usage

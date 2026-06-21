@@ -52,6 +52,16 @@ Each field maps a DOM event to an event name to emit. `props` is sent alongside 
 
 If multiple plugins register a `click` handler, they all run in `plugins=[...]` order. The analytics plugin's click handler doesn't `preventDefault` or `stopPropagation` — it's a passive observer.
 
+## Snapshot enrichment
+
+When the optional [`capture`](/plugins/capture) plugin (from [`@drwyn/store`](https://www.npmjs.com/package/@drwyn/store)) is registered **before** `analytics`, each `click`/`submit` `track` event is automatically enriched with the snapshot `capture` just recorded — the surrounding values (route, cart total, form state…) ride along in the same event:
+
+```ts
+ctx.services.sink({ name: 'cta_clicked', props: { plan: 'pro', route: '/pricing', qty: 2 } })
+```
+
+This is opt-in and fail-safe: with no `snapshots` service registered, `analytics` behaves exactly as documented above. Explicit `track` props take precedence over snapshot keys on collision.
+
 ## Tool-neutral by design
 
 The plugin doesn't import PostHog, Segment, or anyone else. The `sink` you wire up on `ActionProvider` is the translation point:

@@ -9,12 +9,12 @@ From zero to a wrapped component in five minutes.
 
 ## 1. Install
 
-> ⚠️ Alpha release. Current alpha: `0.2.0-alpha.1` — install with the `@alpha` tag.
+> drwyn `0.3.0` — stable release.
 
 ```bash
-bun add @drwyn/react@alpha
-# or: npm install @drwyn/react@alpha
-# or: pnpm add @drwyn/react@alpha
+bun add @drwyn/react
+# or: npm install @drwyn/react
+# or: pnpm add @drwyn/react
 ```
 
 React 18+ is a peer dependency; we assume you've got that already.
@@ -115,7 +115,7 @@ That's the *only* place in your codebase that knows about PostHog or GrowthBook.
 `@drwyn/memory` records which `<Action>`s each user clicks, and the `surface` plugin reads those counts at render time to decide whether to show, collapse, or hide an element — without a flicker.
 
 ```bash
-bun add @drwyn/memory@alpha
+bun add @drwyn/memory
 ```
 
 Wire it into your provider:
@@ -156,12 +156,55 @@ Now any `<Action>` can opt into self-promotion based on use:
 
 The CTA stays subtle by default. After five clicks (auto-recorded by the `memory` plugin), `surface` returns `'full'` on the next route navigation — for **that user only**. See [use cases](/use-cases) for the full catalog.
 
-## 6. Sync memory to a backend (optional)
+## 6. Capture action context (optional)
+
+`@drwyn/store` records the values that existed the moment a `<Action>` fired — feature flags, prices, cart state — so you can query them later and enrich your analytics. The `capture` plugin snapshots every click/submit; `createSnapshotStore` keeps a small ring buffer (25 per action by default) you can read back.
+
+```bash
+bun add @drwyn/store
+```
+
+Register `capture` **before** `analytics` so the snapshot exists when analytics enriches its event:
+
+```tsx filename="app/providers.tsx" {2,3,5,11,12}
+'use client'
+
+import { ActionProvider } from '@drwyn/react'
+import { flag, mount, visibility } from '@drwyn/react/plugins'
+import { capture, analytics, createSnapshotStore } from '@drwyn/store'
+
+const snapshots = createSnapshotStore({ maxPerAction: 25 })
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <ActionProvider
+      plugins={[capture, analytics, flag, mount, visibility]}
+      services={{ sink, flagSource, snapshots }}
+    >
+      {children}
+    </ActionProvider>
+  )
+}
+```
+
+Add a `capture` prop to contribute action-specific values, then read the latest snapshot anywhere with `useDrwynSnapshot`:
+
+```tsx
+<Action name="add-to-cart" track={{ click: 'add_to_cart' }} capture={() => ({ sku })}>
+  <button>Add to cart</button>
+</Action>
+
+const latest = useDrwynSnapshot('add-to-cart')
+```
+
+A snapshot merges three sources — central getters < `useDrwynCapture` contributors < the per-`<Action>` `capture` prop, most specific wins — and the merged result is folded into the `analytics` `track` event. See [the capture plugin](/plugins/capture) for the full API.
+
+## 7. Sync memory to a backend (optional)
 
 By default `@drwyn/memory` is local-only (IndexedDB). To sync per-user memory across devices, pair it with `@drwyn/client` and a drwyn cloud backend:
 
 ```bash
-bun add @drwyn/client@alpha
+bun add @drwyn/client
 ```
 
 ```tsx

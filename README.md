@@ -19,11 +19,12 @@ Wrap any React or Next.js subtree with plugin-driven analytics, feature flags, m
 
 | Package | Description | Version |
 |---|---|---|
-| [`@drwyn/react`](./packages/react) | React/Next.js wrapper component with the plugin runtime and four built-in plugins | `0.2.0-alpha.1` (alpha) |
-| [`@drwyn/memory`](./packages/memory) | Per-user adaptive memory: IndexedDB-backed local memory + optional cloud sync, the `memory` plugin (auto-records `<Action>` clicks), and the `surface` adaptive primitive | `0.2.0-alpha.1` (alpha) |
-| [`@drwyn/client`](./packages/client) | Thin TypeScript SDK that talks to a drwyn cloud backend over HTTP | `0.2.0-alpha.1` (alpha) |
+| [`@drwyn/react`](./packages/react) | React/Next.js wrapper component with the plugin runtime and four built-in plugins | `0.3.0` |
+| [`@drwyn/memory`](./packages/memory) | Per-user adaptive memory: IndexedDB-backed local memory + optional cloud sync, the `memory` plugin (auto-records `<Action>` clicks), and the `surface` adaptive primitive | `0.3.0` |
+| [`@drwyn/client`](./packages/client) | Thin TypeScript SDK that talks to a drwyn cloud backend over HTTP | `0.3.0` |
+| [`@drwyn/store`](./packages/store) | Capture the values that existed when a drwyn action fired — queryable snapshots + track-event enrichment. | `0.3.0` |
 
-> ⚠️ **Alpha release.** drwyn is in active development. Expect breaking changes before v1.0. Published under the `alpha` npm tag — install with `@alpha` (see below).
+> drwyn `0.3.0` — the first stable release. Install the packages you need (see below).
 
 ## What's in this repo
 
@@ -40,9 +41,9 @@ If you want to self-host an event ingestion + memory backend for the OSS package
 ## Getting started
 
 ```bash
-bun add @drwyn/react@alpha
-# or: npm install @drwyn/react@alpha
-# or: pnpm add @drwyn/react@alpha
+bun add @drwyn/react
+# or: npm install @drwyn/react
+# or: pnpm add @drwyn/react
 ```
 
 See the [docs site](https://drwyn.dev) (or the [`docs/`](./docs) folder) for usage, concepts, and recipes.

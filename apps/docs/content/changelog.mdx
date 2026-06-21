@@ -7,6 +7,23 @@ description: Release history for @drwyn/react.
 
 All notable changes to `@drwyn/react`. Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versioning is [semver](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-06-21
+
+First **stable** (non-alpha) release. Published under the `latest` npm tag — install with `bun add @drwyn/react`.
+
+### Added
+
+- New `@drwyn/store` package — capture the values that existed when a drwyn action fired:
+  - `capture` plugin (propKey `capture`, always-on) that records a snapshot on click/submit. Register before `analytics`.
+  - `createSnapshotStore` + `SnapshotStore` read API (`last`, `history`), a per-action ring buffer (default 25), point-in-time cloned via `structuredClone`.
+  - `useDrwynCapture` and `useDrwynSnapshot` hooks.
+  - Layered merge, most specific wins: central getters < `useDrwynCapture` contributors < per-`<Action>` `capture` prop. See [Capture plugin](/plugins/capture).
+- `analytics` now enriches `track` click/submit events with the current snapshot when a `snapshots` service is present (no-op otherwise).
+
+### Changed
+
+- Built-in plugin propKeys (`track`, `flag`, `mount`, `visibility`) are now registered on the base `ActionPluginRegistry`, so external consumers get typed `<Action>` props without a manual `declare module` augmentation.
+
 ## [0.2.0-alpha.1] — 2026-06-14
 
 ### Fixed
