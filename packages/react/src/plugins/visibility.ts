@@ -40,9 +40,3 @@ export const visibility = definePlugin({
     },
   },
 })
-
-declare module '../types' {
-  interface ActionPluginRegistry {
-    visibility: typeof visibility
-  }
-}

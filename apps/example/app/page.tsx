@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { PricingCta } from '@/components/pricing-cta'
 import { FeatureTour } from '@/components/feature-tour'
 import { NavList } from '@/components/nav-list'
+import { CaptureDemo } from '@/components/capture-demo'
 
 export default function HomePage() {
   return (
@@ -34,6 +35,13 @@ export default function HomePage() {
             Pricing
           </h2>
           <PricingCta />
+        </section>
+
+        <section aria-label="Capture">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-fg-muted">
+            Capture (snapshot store)
+          </h2>
+          <CaptureDemo />
         </section>
 
         <section className="rounded-xl border border-white/10 bg-surface-1 p-6">

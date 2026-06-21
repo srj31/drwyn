@@ -22,9 +22,3 @@ export const flag = definePlugin({
     return { kind: 'block' }
   },
 })
-
-declare module '../types' {
-  interface ActionPluginRegistry {
-    flag: typeof flag
-  }
-}

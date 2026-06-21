@@ -57,4 +57,18 @@ export interface Plugin<
   render?: (cfg: Config, ctx: PluginContext) => RenderResult
 }
 
-export interface ActionPluginRegistry {}
+/**
+ * Maps a plugin's `propKey` to its config type, driving `<Action>`'s props.
+ *
+ * The built-in plugins (shipped in this package) are registered here directly so
+ * their propKeys reach external consumers through the normal exported type —
+ * module augmentation from within a package can't survive its own d.ts bundle.
+ * External plugins (e.g. @drwyn/memory, @drwyn/store) augment this interface via
+ * `declare module '@drwyn/react'`.
+ */
+export interface ActionPluginRegistry {
+  analytics: typeof import('./plugins/analytics').analytics
+  flag: typeof import('./plugins/flag').flag
+  mount: typeof import('./plugins/mount').mount
+  visibility: typeof import('./plugins/visibility').visibility
+}

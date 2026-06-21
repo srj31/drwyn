@@ -34,6 +34,7 @@
         "@drwyn/client": "workspace:*",
         "@drwyn/memory": "workspace:*",
         "@drwyn/react": "workspace:*",
+        "@drwyn/store": "workspace:*",
         "@tailwindcss/postcss": "^4.0.0",
         "next": "^15.1.0",
         "react": "^19.0.0",
@@ -54,7 +55,7 @@
     },
     "packages/client": {
       "name": "@drwyn/client",
-      "version": "0.2.0-alpha.1",
+      "version": "0.3.0",
       "devDependencies": {
         "happy-dom": "^15.11.0",
         "tsup": "^8.3.0",
@@ -64,7 +65,7 @@
     },
     "packages/memory": {
       "name": "@drwyn/memory",
-      "version": "0.2.0-alpha.1",
+      "version": "0.3.0",
       "devDependencies": {
         "@drwyn/client": "workspace:*",
         "@drwyn/react": "workspace:*",
@@ -80,8 +81,8 @@
         "vitest": "^2.1.0",
       },
       "peerDependencies": {
-        "@drwyn/client": "^0.2.0-alpha.1",
-        "@drwyn/react": "^0.2.0-alpha.1",
+        "@drwyn/client": "^0.3.0",
+        "@drwyn/react": "^0.3.0",
       },
       "optionalPeers": [
         "@drwyn/client",
@@ -89,7 +90,7 @@
     },
     "packages/react": {
       "name": "@drwyn/react",
-      "version": "0.2.0-alpha.1",
+      "version": "0.3.0",
       "devDependencies": {
         "@drwyn/memory": "workspace:*",
         "@testing-library/jest-dom": "^6.6.0",
@@ -104,13 +105,34 @@
         "vitest": "^2.1.0",
       },
       "peerDependencies": {
-        "@drwyn/memory": "^0.2.0-alpha.1",
+        "@drwyn/memory": "^0.3.0",
         "react": ">=18",
         "react-dom": ">=18",
       },
       "optionalPeers": [
         "@drwyn/memory",
       ],
+    },
+    "packages/store": {
+      "name": "@drwyn/store",
+      "version": "0.3.0",
+      "devDependencies": {
+        "@drwyn/react": "workspace:*",
+        "@testing-library/react": "^16.1.0",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "happy-dom": "^15.11.0",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "tsup": "^8.3.0",
+        "typescript": "^5.7.0",
+        "vitest": "^2.1.0",
+      },
+      "peerDependencies": {
+        "@drwyn/react": "^0.3.0",
+        "react": ">=18",
+        "react-dom": ">=18",
+      },
     },
   },
   "packages": {
@@ -191,6 +213,8 @@
     "@drwyn/memory": ["@drwyn/memory@workspace:packages/memory"],
 
     "@drwyn/react": ["@drwyn/react@workspace:packages/react"],
+
+    "@drwyn/store": ["@drwyn/store@workspace:packages/store"],
 
     "@emnapi/runtime": ["@emnapi/runtime@1.10.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA=="],
 

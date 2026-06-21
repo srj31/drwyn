@@ -1,0 +1,52 @@
+{
+  "name": "@drwyn/store",
+  "version": "0.3.0",
+  "description": "Capture the values that existed when a drwyn action fired — queryable snapshots + track-event enrichment.",
+  "license": "MIT",
+  "author": "drwyn contributors",
+  "homepage": "https://drwyn.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/srj31/drwyn.git",
+    "directory": "packages/store"
+  },
+  "bugs": {
+    "url": "https://github.com/srj31/drwyn/issues"
+  },
+  "keywords": ["drwyn", "store", "snapshot", "context", "analytics", "react"],
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18",
+    "@drwyn/react": "^0.3.0"
+  },
+  "devDependencies": {
+    "@drwyn/react": "workspace:*",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "happy-dom": "^15.11.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

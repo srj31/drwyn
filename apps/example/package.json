@@ -17,6 +17,7 @@
     "@drwyn/react": "workspace:*",
     "@drwyn/memory": "workspace:*",
     "@drwyn/client": "workspace:*",
+    "@drwyn/store": "workspace:*",
     "tailwindcss": "^4.0.0",
     "@tailwindcss/postcss": "^4.0.0"
   },

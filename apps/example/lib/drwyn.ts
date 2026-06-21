@@ -1,11 +1,13 @@
 import { DrwynClient } from '@drwyn/client'
-import { createMemoryStore, type MemoryStore } from '@drwyn/memory'
+import { type MemoryStore, createMemoryStore } from '@drwyn/memory'
+import { type SnapshotStore, createSnapshotStore } from '@drwyn/store'
 
 const DEFAULT_API_URL = 'http://localhost:8000'
 
 interface DrwynGlobals {
   __drwynClient?: DrwynClient
   __drwynMemory?: MemoryStore
+  __drwynSnapshots?: SnapshotStore
   __drwynProjectKey?: string
 }
 
@@ -72,4 +74,21 @@ export function getMemoryStore(): MemoryStore {
     globalScope.__drwynMemory = createMemoryStore({ cloud: client })
   }
   return globalScope.__drwynMemory
+}
+
+/**
+ * Singleton snapshot store. Pure in-memory, so it's SSR-safe to construct on the
+ * server too (no actions fire during SSR; the client store is what users see).
+ * The `route` central getter is read lazily at action time — client-only.
+ */
+export function getSnapshotStore(): SnapshotStore {
+  if (!globalScope.__drwynSnapshots) {
+    globalScope.__drwynSnapshots = createSnapshotStore({
+      maxPerAction: 25,
+      capture: {
+        route: () => (typeof window !== 'undefined' ? window.location.pathname : ''),
+      },
+    })
+  }
+  return globalScope.__drwynSnapshots
 }

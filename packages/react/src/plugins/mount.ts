@@ -17,9 +17,3 @@ export const mount = definePlugin({
     return () => cfg.onUnmount?.()
   },
 })
-
-declare module '../types' {
-  interface ActionPluginRegistry {
-    mount: typeof mount
-  }
-}
